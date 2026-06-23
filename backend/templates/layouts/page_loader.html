@@ -1,0 +1,117 @@
+{{define "page_loader"}}
+<div id="pageLoader" class="loader">
+  <div class="loader-content">
+    <div class="loader-logo">🏛️</div>
+    <div class="loader-bar">
+      <span></span>
+    </div>
+  </div>
+</div>
+
+<style>
+.loader{
+  position:fixed;
+  inset:0;
+  background:#ffffff;
+  z-index:99999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all .4s ease;
+}
+
+.loader-hide{
+  opacity:0;
+  visibility:hidden;
+}
+
+.loader-content{
+  text-align:center;
+}
+
+.loader-logo{
+  font-size:48px;
+  margin-bottom:20px;
+  animation:pulse 1.5s infinite;
+}
+
+.loader-bar{
+  width:180px;
+  height:4px;
+  background:#e5e7eb;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.loader-bar span{
+  display:block;
+  width:40%;
+  height:100%;
+  background:#2563eb;
+  border-radius:999px;
+  animation:loading 1.2s infinite;
+}
+
+@keyframes loading{
+  0%{
+    transform:translateX(-100%);
+  }
+  100%{
+    transform:translateX(350%);
+  }
+}
+
+@keyframes pulse{
+  0%,100%{
+    transform:scale(1);
+    opacity:1;
+  }
+  50%{
+    transform:scale(1.08);
+    opacity:.7;
+  }
+}
+</style>
+
+<script>
+(function () {
+  const loader = document.getElementById('pageLoader');
+  if (!loader) return;
+
+  function hideLoader() {
+    loader.classList.add('loader-hide');
+  }
+
+  function showLoader() {
+    loader.classList.remove('loader-hide');
+  }
+
+  window.addEventListener('load', function () {
+    setTimeout(hideLoader, 400);
+  });
+
+  document.addEventListener('click', function (e) {
+    const link = e.target.closest('a');
+
+    if (!link) return;
+
+    const href = link.getAttribute('href');
+
+    if (!href ||
+        href.startsWith('#') ||
+        link.target === '_blank' ||
+        link.hasAttribute('download') ||
+        e.ctrlKey || e.metaKey || e.shiftKey) {
+      return;
+    }
+
+    showLoader();
+  });
+
+  document.addEventListener('submit', function (e) {
+    if (e.target.hasAttribute('data-no-loader')) return;
+    showLoader();
+  });
+})();
+</script>
+{{end}}

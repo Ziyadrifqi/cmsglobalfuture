@@ -1,0 +1,132 @@
+{{define "cms/gallery_category_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Kategori Galeri</div>
+        <div class="topbar-sub"><a href="/cms/gallery" style="color:var(--primary);text-decoration:none">← Kembali ke galeri</a></div>
+      </div>
+       </div>
+    </div>
+    <div class="page-content" style="max-width:640px">
+
+      {{ if .flash }}
+      <div class="flash {{ if eq .flash "error_empty" }}flash-error{{ else }}flash-success{{ end }}">
+        {{ if eq .flash "created" }}✓ Kategori berhasil dibuat
+        {{ else if eq .flash "updated" }}✓ Kategori berhasil diperbarui
+        {{ else if eq .flash "deleted" }}✓ Kategori berhasil dihapus
+        {{ else if eq .flash "error_empty" }}⚠ Nama kategori tidak boleh kosong
+        {{ end }}
+      </div>
+      {{ end }}
+
+      <!-- Tambah kategori baru -->
+      <div class="card mb-4 fade-in">
+        <div class="card-header"><div class="card-title">+ Tambah Kategori Baru</div></div>
+        <div class="card-body">
+          <form method="POST" action="/cms/gallery/categories/create">
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="field-label">Nama Kategori *</label>
+                <input type="text" name="name" required placeholder="cth: Workshop"/>
+              </div>
+              <div class="form-group">
+                <label class="field-label">Urutan Tampil</label>
+                <input type="number" name="order_num" min="0" value="0" style="max-width:100px"/>
+              </div>
+            </div>
+            <div style="margin-top:.75rem">
+              <button type="submit" class="btn btn-primary">Tambah Kategori</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Daftar kategori -->
+      <div class="card fade-in" style="animation-delay:.1s">
+        {{ if not .categories }}
+        <div class="empty-state"><div class="empty-icon">🏷</div>Belum ada kategori</div>
+        {{ else }}
+        <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Slug</th><th>Urutan</th><th></th></tr></thead>
+          <tbody>
+            {{ range .categories }}
+            <tr>
+              <td class="td-main">{{ .Name }}</td>
+              <td class="td-muted"><code style="background:#F1F5F9;padding:1px 5px;border-radius:4px;font-size:.72rem">{{ .Slug }}</code></td>
+              <td class="td-muted">{{ .OrderNum }}</td>
+              <td>
+                <div class="actions">
+                  <button type="button" onclick="openEditModal({{ .ID }}, '{{ .Name }}', {{ .OrderNum }})" class="btn btn-sm btn-blue-ghost">Edit</button>
+                  <form method="POST" action="/cms/gallery/categories/{{ .ID }}/delete" onsubmit="return confirm('Hapus kategori ini? Foto yang terhubung tidak akan terhapus.')">
+                    <button class="btn btn-sm btn-danger-ghost" type="submit">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal edit -->
+<div class="modal-backdrop" id="editModal">
+  <div class="modal">
+    <div class="modal-title">Edit Kategori</div>
+    <form method="POST" id="editForm">
+      <div class="form-group" style="margin-bottom:.75rem">
+        <label class="field-label">Nama Kategori *</label>
+        <input type="text" name="name" id="editName" required/>
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="field-label">Urutan Tampil</label>
+        <input type="number" name="order_num" id="editOrder" min="0" style="max-width:100px"/>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" onclick="closeEditModal()" class="btn btn-ghost" style="flex:1">Batal</button>
+        <button type="submit" class="btn btn-primary" style="flex:1">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openEditModal(id, name, order) {
+  document.getElementById('editForm').action = '/cms/gallery/categories/' + id + '/edit';
+  document.getElementById('editName').value  = name;
+  document.getElementById('editOrder').value = order;
+  document.getElementById('editModal').classList.add('open');
+}
+function closeEditModal() { document.getElementById('editModal').classList.remove('open'); }
+document.getElementById('editModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditModal();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeEditModal(); });
+</script>
+</body>
+</html>
+{{end}}

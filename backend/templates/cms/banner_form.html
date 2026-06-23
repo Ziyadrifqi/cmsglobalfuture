@@ -1,0 +1,78 @@
+{{define "cms/banner_form.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">{{ .title }}</div>
+        <div class="topbar-sub"><a href="/cms/banners" style="color:var(--primary);text-decoration:none">← Kembali ke daftar banner</a></div>
+      </div>
+    </div>
+    </div>
+    <div class="page-content" style="max-width:600px">
+      {{ if .error }}<div class="flash flash-error">⚠ {{ .error }}</div>{{ end }}
+      <form method="POST" action="{{ if .is_edit }}/cms/banners/{{ .banner.ID }}/edit{{ else }}/cms/banners/create{{ end }}" enctype="multipart/form-data">
+        <div class="form-card mb-4 fade-in">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="field-label">Judul Banner *</label>
+              <input type="text" name="title" required value="{{ if .is_edit }}{{ .banner.Title }}{{ end }}" placeholder="misal: Promo Ramadan"/>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Gambar Banner {{ if not .is_edit }}*{{ end }}</label>
+              {{ if .is_edit }}
+              <img src="{{ .banner.ImagePath }}" style="height:120px;border-radius:8px;object-fit:cover;border:1px solid var(--border);margin-bottom:.5rem;display:block"/>
+              <span class="field-hint" style="display:block;margin-bottom:.35rem">Upload baru untuk mengganti gambar</span>
+              {{ end }}
+              <input type="file" name="image" accept="image/*" {{ if not .is_edit }}required{{ end }}/>
+              <span class="field-hint">Rekomen: 1920x600px. JPG, PNG, WebP.</span>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Link URL <span style="font-weight:400;color:#94A3B8">(opsional)</span></label>
+              <input type="text" name="link_url" value="{{ if .is_edit }}{{ .banner.LinkURL }}{{ end }}" placeholder="https://..."/>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Urutan Tampil</label>
+              <input type="number" name="order_num" min="0" value="{{ if .is_edit }}{{ .banner.OrderNum }}{{ else }}0{{ end }}" style="max-width:120px"/>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Status</label>
+              <div style="display:flex;gap:1rem;align-items:center;padding:.6rem 0">
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                  <input type="radio" name="is_active" value="1" {{ if .is_edit }}{{ if .banner.IsActive }}checked{{ end }}{{ else }}checked{{ end }} style="accent-color:var(--primary);width:auto"/> Aktif
+                </label>
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                  <input type="radio" name="is_active" value="0" {{ if .is_edit }}{{ if not .banner.IsActive }}checked{{ end }}{{ end }} style="accent-color:var(--primary);width:auto"/> Nonaktif
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/cms/banners" class="btn btn-ghost">Batal</a>
+          <button type="submit" class="btn btn-primary">{{ if .is_edit }}Simpan Perubahan{{ else }}+ Tambah Banner{{ end }}</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

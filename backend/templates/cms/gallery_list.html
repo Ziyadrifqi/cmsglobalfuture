@@ -1,0 +1,135 @@
+{{define "cms/gallery_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+  <style>
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    .gallery-card {
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      background: var(--card);
+      transition: box-shadow .15s, transform .15s;
+      animation: fadeUp .3s ease both;
+    }
+    .gallery-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.09); transform: translateY(-2px); }
+    .gallery-thumb {
+      width: 100%; height: 140px; object-fit: cover; display: block;
+      background: #F1F5F9;
+    }
+    .gallery-thumb-placeholder {
+      width: 100%; height: 140px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #F0FDF9, #ECFDF5);
+      font-size: 2.5rem;
+    }
+    .gallery-body { padding: .75rem; }
+    .gallery-title { font-size: .82rem; font-weight: 600; color: #0F172A; line-height: 1.3; margin-bottom: .4rem; }
+    .gallery-meta  { font-size: .7rem; color: var(--text-muted); display: flex; gap: .5rem; flex-wrap: wrap; }
+    .gallery-actions { display: flex; gap: .3rem; margin-top: .6rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+  <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Manajemen Galeri</div>
+        <div class="topbar-sub">Kelola foto dan video kegiatan Green Future Indonesia</div>
+      </div>
+      </div>
+      <div class="flex gap-2">
+        <a href="/cms/gallery/categories" class="btn btn-ghost">⚙ Kategori</a>
+        <a href="/cms/gallery/create" class="btn btn-primary">+ Tambah Media</a>
+      </div>
+    </div>
+    <div class="page-content">
+
+      {{ if .flash }}
+      <div class="flash flash-success">✓
+        {{ if eq .flash "created" }}Media berhasil ditambahkan
+        {{ else if eq .flash "updated" }}Media berhasil diperbarui
+        {{ else if eq .flash "deleted" }}Media berhasil dihapus
+        {{ else if eq .flash "toggled" }}Visibilitas diperbarui
+        {{ else }}{{ .flash }}{{ end }}
+      </div>
+      {{ end }}
+
+      <!-- Filter kategori -->
+      <div class="flex gap-2 flex-wrap mb-4">
+        <a href="/cms/gallery" class="btn btn-sm {{ if eq .active_category "" }}btn-primary{{ else }}btn-ghost{{ end }}">Semua</a>
+        {{ range .categories }}
+        <a href="/cms/gallery?category={{ .Slug }}"
+           class="btn btn-sm {{ if eq $.active_category .Slug }}btn-primary{{ else }}btn-ghost{{ end }}">
+          {{ .Name }}
+        </a>
+        {{ end }}
+      </div>
+
+      {{ if not .items }}
+      <div class="card"><div class="empty-state"><div class="empty-icon">📷</div>Belum ada media di galeri ini</div></div>
+      {{ else }}
+      <div class="gallery-grid">
+        {{ range .items }}
+        <div class="gallery-card">
+          {{ if .URL }}
+          <img src="{{ if .ThumbnailURL }}{{ .ThumbnailURL }}{{ else }}{{ .URL }}{{ end }}" alt="{{ .Title }}" class="gallery-thumb" loading="lazy"/>
+          {{ else }}
+          <div class="gallery-thumb-placeholder">{{ if eq .Type "video" }}🎥{{ else }}🌿{{ end }}</div>
+          {{ end }}
+          <div class="gallery-body">
+            <div class="gallery-title">{{ .Title }}</div>
+            <div class="gallery-meta">
+              <span>
+                {{ if eq .Type "video" }}<span class="badge badge-orange" style="font-size:.65rem">▶ VIDEO</span>{{ else }}<span class="badge badge-blue" style="font-size:.65rem">🖼 FOTO</span>{{ end }}
+              </span>
+              {{ if .Category }}<span class="badge badge-green" style="font-size:.65rem">{{ .Category.Name }}</span>{{ end }}
+              {{ if not .IsActive }}<span class="badge badge-gray" style="font-size:.65rem">Tersembunyi</span>{{ end }}
+            </div>
+            <div class="gallery-actions">
+              <a href="/cms/gallery/{{ .ID }}/edit" class="btn btn-sm btn-blue-ghost">Edit</a>
+              <form method="POST" action="/cms/gallery/{{ .ID }}/toggle">
+                <button class="btn btn-sm btn-ghost" type="submit">{{ if .IsActive }}Sembunyikan{{ else }}Tampilkan{{ end }}</button>
+              </form>
+              <form method="POST" action="/cms/gallery/{{ .ID }}/delete" onsubmit="return confirm('Hapus media ini?')">
+                <button class="btn btn-sm btn-danger-ghost" type="submit">Hapus</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+      {{ end }}
+
+      <!-- Pagination -->
+      {{ $limit := 20 }}
+     {{ if gt .total 20 }}
+      <div class="flex gap-2 justify-center" style="margin-top:1.5rem">
+        <span style="font-size:.8rem;color:var(--text-muted);padding:.5rem">Total: {{ .total }} media</span>
+      </div>
+      {{ end }}
+
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

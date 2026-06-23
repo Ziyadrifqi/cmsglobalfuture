@@ -1,0 +1,256 @@
+{{define "auth/login.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login — Global Future Indonesia</title>
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --danger:  #EF4444;
+      --warning: #F59E0B;
+      --text:    #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      display: flex;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ── Panel kiri: branding / ilustrasi ── */
+    .panel-brand {
+      flex: 1.1;
+      position: relative;
+      background: linear-gradient(150deg, #1E3A8A 0%, #2563EB 45%, #3B82F6 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem 3.5rem;
+      overflow: hidden;
+    }
+    .panel-brand::before, .panel-brand::after {
+      content: '';
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .panel-brand::before { width: 420px; height: 420px; top: -120px; right: -140px; }
+    .panel-brand::after  { width: 280px; height: 280px; bottom: -100px; left: -80px; background: rgba(255,255,255,0.05); }
+
+    .brand-top { display: flex; align-items: center; gap: .75rem; position: relative; z-index: 1; }
+    .brand-icon {
+      width: 44px; height: 44px; background: rgba(255,255,255,0.15);
+      border-radius: 12px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; backdrop-filter: blur(4px);
+    }
+    .brand-name { font-size: 1.05rem; font-weight: 700; }
+    .brand-sub  { font-size: .75rem; color: rgba(255,255,255,0.7); }
+
+    .brand-mid { position: relative; z-index: 1; max-width: 420px; }
+    .brand-mid h1 {
+      font-size: 2rem; font-weight: 800; line-height: 1.25; margin-bottom: 1rem;
+      animation: fadeUp .6s ease both;
+    }
+    .brand-mid p {
+      font-size: .92rem; color: rgba(255,255,255,0.8); line-height: 1.6;
+      animation: fadeUp .6s ease .1s both;
+    }
+
+    .brand-features {
+      display: flex; flex-direction: column; gap: .9rem; margin-top: 1.75rem;
+      position: relative; z-index: 1;
+      animation: fadeUp .6s ease .2s both;
+    }
+    .brand-feature { display: flex; align-items: center; gap: .65rem; font-size: .85rem; color: rgba(255,255,255,0.92); }
+    .brand-feature-icon {
+      width: 28px; height: 28px; border-radius: 8px; background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0;
+    }
+
+    .brand-bottom { position: relative; z-index: 1; font-size: .72rem; color: rgba(255,255,255,0.55); }
+
+    /* ── Panel kanan: form login ── */
+    .panel-form {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F8FAFC;
+      padding: 2rem;
+      overflow-y: auto;
+    }
+    .login-wrap { width: 100%; max-width: 380px; animation: fadeUp .5s ease both; }
+
+    .mobile-brand { display: none; text-align: center; margin-bottom: 2rem; }
+    .mobile-brand .brand-icon { width: 52px; height: 52px; background: var(--primary); margin: 0 auto .75rem; font-size: 1.5rem; border-radius: 14px; color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 14px rgba(37,99,235,.3); }
+
+    .form-heading { margin-bottom: 1.75rem; }
+    .form-heading h2 { font-size: 1.35rem; font-weight: 800; color: #0F172A; margin-bottom: .35rem; }
+    .form-heading p  { font-size: .85rem; color: #64748B; }
+
+    .alert {
+      border-radius: 10px; padding: .8rem 1rem; font-size: .82rem;
+      margin-bottom: 1.25rem; display: flex; align-items: flex-start; gap: .6rem;
+    }
+    .alert-error   { background: #FEF2F2; border: 1px solid #FECACA; color: var(--danger); animation: shake .35s ease; }
+    .alert-warning { background: #FFFBEB; border: 1px solid #FDE68A; color: #B45309; }
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+    .form-group { margin-bottom: 1.15rem; }
+    label { display: block; font-size: .8rem; font-weight: 600; color: #475569; margin-bottom: .45rem; }
+
+    .input-wrap { position: relative; }
+    .input-wrap .input-icon {
+      position: absolute; left: .9rem; top: 50%; transform: translateY(-50%);
+      font-size: .9rem; opacity: .45; pointer-events: none;
+    }
+    .input-wrap input { padding-left: 2.5rem; }
+    .input-wrap .toggle-pw {
+      position: absolute; right: .7rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; font-size: .8rem;
+      color: #94A3B8; padding: .3rem; line-height: 1;
+    }
+    .input-wrap .toggle-pw:hover { color: var(--primary); }
+
+    input[type=email], input[type=password], input[type=text] {
+      width: 100%; padding: .75rem 1rem; border: 1.5px solid #E2E8F0; border-radius: 10px;
+      font-size: .9rem; color: var(--text); background: #fff;
+      transition: border-color .2s, box-shadow .2s; outline: none;
+    }
+    input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.12); }
+
+    .btn-login {
+      width: 100%; padding: .85rem; background: var(--primary); color: #fff;
+      border: none; border-radius: 10px; font-size: .9rem; font-weight: 700;
+      cursor: pointer; margin-top: .35rem;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+    }
+    .btn-login:hover { background: var(--primary-dark); box-shadow: 0 6px 16px rgba(37,99,235,0.3); }
+    .btn-login:active { transform: scale(.98); }
+    .btn-login.is-loading { pointer-events: none; opacity: .85; }
+    .btn-spinner {
+      width: 15px; height: 15px; border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff; border-radius: 50%; animation: loaderSpin .65s linear infinite;
+      display: none;
+    }
+    .btn-login.is-loading .btn-spinner { display: inline-block; }
+    @keyframes loaderSpin { to { transform: rotate(360deg); } }
+
+    .hint { text-align: center; margin-top: 1.75rem; font-size: .76rem; color: #94A3B8; }
+    .hint code { background: #F1F5F9; padding: 2px 7px; border-radius: 5px; font-size: .72rem; color: #475569; }
+
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+
+    @media (max-width: 860px) {
+      .panel-brand { display: none; }
+      .mobile-brand { display: block; }
+      .panel-form { flex: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Panel kiri: branding (disembunyikan di mobile) -->
+  <div class="panel-brand">
+    <div class="brand-top">
+      <div class="brand-icon">🏛️</div>
+      <div>
+        <div class="brand-name">Global Future CMS</div>
+        <div class="brand-sub">Panel Manajemen Konten</div>
+      </div>
+    </div>
+
+    <div class="brand-mid">
+      <h1>Kelola konten dengan mudah, dari satu tempat.</h1>
+      <p>Berita, galeri kegiatan, rekrutmen relawan, dan halaman portal — semuanya terkelola dalam satu panel yang rapi dan aman.</p>
+
+      <div class="brand-features">
+        <div class="brand-feature"><div class="brand-feature-icon">📰</div> Publikasi berita dengan alur review</div>
+        <div class="brand-feature"><div class="brand-feature-icon">🌿</div> Rekrutmen &amp; pendataan relawan</div>
+        <div class="brand-feature"><div class="brand-feature-icon">🔒</div> Akses berbasis role yang aman</div>
+      </div>
+    </div>
+
+    <div class="brand-bottom">© {{ "2026" }} Global Future Indonesia — Internal Management System</div>
+  </div>
+
+  <!-- Panel kanan: form login -->
+  <div class="panel-form">
+    <div class="login-wrap">
+
+      <div class="mobile-brand">
+        <div class="brand-icon">🏛️</div>
+        <div style="font-weight:700;font-size:1rem;color:#0F172A">Global Future CMS</div>
+        <div style="font-size:.78rem;color:#64748B">Panel Manajemen Konten</div>
+      </div>
+
+      <div class="form-heading">
+        <h2>Selamat datang kembali</h2>
+        <p>Masuk untuk mengakses panel manajemen Anda</p>
+      </div>
+
+      {{ if eq .reason "idle" }}
+      <div class="alert alert-warning">
+        <span>⏰</span>
+        <div>
+          <strong>Sesi berakhir otomatis</strong><br/>
+          <span style="font-size:.77rem">Anda tidak aktif selama 1 jam. Silakan login kembali.</span>
+        </div>
+      </div>
+      {{ end }}
+
+      {{ if .error }}
+      <div class="alert alert-error">⚠ {{ .error }}</div>
+      {{ end }}
+
+      <form method="POST" action="/cms/login" id="loginForm">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input type="email" id="email" name="email" required placeholder="Masukkan Email anda" autocomplete="email"/>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" name="password" required placeholder="••••••••" autocomplete="current-password"/>
+            <button type="button" class="toggle-pw" id="togglePw" onclick="togglePassword()">Lihat</button>
+          </div>
+        </div>
+        <button type="submit" class="btn-login" id="loginBtn">
+          <span class="btn-spinner"></span>
+          <span id="loginBtnLabel">Masuk ke CMS</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+<script>
+function togglePassword() {
+  var pw = document.getElementById('password');
+  var btn = document.getElementById('togglePw');
+  var isHidden = pw.type === 'password';
+  pw.type = isHidden ? 'text' : 'password';
+  btn.textContent = isHidden ? 'Sembunyikan' : 'Lihat';
+}
+
+document.getElementById('loginForm').addEventListener('submit', function () {
+  var btn = document.getElementById('loginBtn');
+  btn.classList.add('is-loading');
+  document.getElementById('loginBtnLabel').textContent = 'Memeriksa...';
+});
+</script>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,105 @@
+{{define "cms/news_form.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">{{ .title }}</div>
+        <div class="topbar-sub"><a href="/cms/news" style="color:var(--primary);text-decoration:none">← Kembali ke daftar berita</a></div>
+      </div>
+      </div>
+    </div>
+    <div class="page-content" style="max-width:860px">
+      <form method="POST" action="{{ if .is_edit }}/cms/news/{{ .news.ID }}/edit{{ else }}/cms/news/create{{ end }}" enctype="multipart/form-data">
+        <div class="form-card mb-4 fade-in">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="field-label">Judul Berita *</label>
+              <input type="text" name="title" required value="{{ if .is_edit }}{{ .news.Title }}{{ end }}" placeholder="Masukkan judul yang menarik..."/>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Ringkasan</label>
+              <textarea name="excerpt" rows="2" placeholder="Ringkasan singkat untuk preview...">{{ if .is_edit }}{{ .news.Excerpt }}{{ end }}</textarea>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Gambar Thumbnail</label>
+              {{ if .is_edit }}{{ if .news.Thumbnail }}
+              <img src="{{ .news.Thumbnail }}" style="height:100px;border-radius:8px;object-fit:cover;border:1px solid var(--border);margin-bottom:.5rem"/>
+              {{ end }}{{ end }}
+              <input type="file" name="thumbnail" accept="image/*"/>
+              <span class="field-hint">JPG, PNG, WebP — maks 2MB. Rekomen 1200×630px.</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-card mb-4 fade-in" style="animation-delay:.1s">
+          <div class="form-group">
+            <label class="field-label">Isi Berita *</label>
+            <div class="editor-toolbar">
+              <button type="button" onclick="applyFmt('**','**')"><b>B</b></button>
+              <button type="button" onclick="applyFmt('_','_')"><i>I</i></button>
+              <button type="button" onclick="applyFmt('## ','')">H2</button>
+              <button type="button" onclick="applyFmt('### ','')">H3</button>
+              <button type="button" onclick="applyFmt('- ','')">• List</button>
+              <button type="button" onclick="applyFmt('> ','')">❝ Quote</button>
+              <button type="button" onclick="applyFmt('[','](url)')">Link</button>
+            </div>
+            <textarea id="content" name="content" rows="22" required placeholder="Tulis isi berita di sini... (mendukung Markdown)" class="code-area">{{ if .is_edit }}{{ .news.Content }}{{ end }}</textarea>
+          </div>
+        </div>
+
+        <div class="fade-in" style="animation-delay:.15s;margin-bottom:1rem">
+          <details>
+            <summary>SEO &amp; Meta (opsional)</summary>
+            <div class="details-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="field-label">Meta Title <span style="font-weight:400;color:#94A3B8">(maks 60 karakter)</span></label>
+                  <input type="text" name="meta_title" maxlength="60" value="{{ if .is_edit }}{{ .news.MetaTitle }}{{ end }}" placeholder="Judul untuk Google..."/>
+                </div>
+                <div class="form-group">
+                  <label class="field-label">Meta Description <span style="font-weight:400;color:#94A3B8">(maks 160 karakter)</span></label>
+                  <textarea name="meta_description" rows="2" maxlength="160" placeholder="Deskripsi untuk Google...">{{ if .is_edit }}{{ .news.MetaDescription }}{{ end }}</textarea>
+                </div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="flex gap-2">
+          <a href="/cms/news" class="btn btn-ghost">Batal</a>
+          <button type="submit" class="btn btn-primary">{{ if .is_edit }}💾 Simpan Perubahan{{ else }}💾 Simpan Draft{{ end }}</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+<script>
+function applyFmt(b, a) {
+  const ta = document.getElementById('content');
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  ta.value = ta.value.slice(0,s) + b + ta.value.slice(s,e) + a + ta.value.slice(e);
+  ta.focus(); ta.setSelectionRange(s+b.length, e+b.length);
+}
+</script>
+</body>
+</html>
+{{end}}

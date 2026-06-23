@@ -1,0 +1,124 @@
+{{define "cms/user_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+  <style>
+    .flash { position: relative; cursor: pointer; padding-right: 2.2rem; transition: opacity .35s ease, transform .35s ease, max-height .35s ease; }
+    .flash::after {
+      content: '✕'; position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+      font-size: .7rem; opacity: .55;
+    }
+    .flash.flash-hide { opacity: 0; transform: translateY(-6px); max-height: 0; padding-top: 0; padding-bottom: 0; margin-bottom: 0; overflow: hidden; }
+    .flash-warning { background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; }
+  </style>
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Manajemen Pengguna</div>
+        <div class="topbar-sub">Kelola akun dan role pengguna CMS</div>
+      </div>
+      </div>
+      <a href="/cms/users/create" class="btn btn-primary">+ Tambah Pengguna</a>
+    </div>
+    <div class="page-content">
+
+      {{ if .flash }}
+      {{ $isWarning := or (hasSuffix .flash "_email_failed") (hasSuffix .flash "_email_not_configured") }}
+      {{ $isError := eq .flash "reset_failed" }}
+      <div class="flash {{ if $isError }}flash-error{{ else if $isWarning }}flash-warning{{ else }}flash-success{{ end }}"
+           id="flashMsg" data-autohide="{{ if or $isError $isWarning }}8000{{ else }}3500{{ end }}"
+           onclick="this.classList.add('flash-hide')">
+        {{ if eq .flash "created" }}✓ Pengguna berhasil dibuat, password telah dikirim ke email
+        {{ else if eq .flash "created_email_failed" }}⚠ Pengguna berhasil dibuat, TAPI email gagal terkirim. Cek log server, atau beri tahu password ke user secara manual.
+        {{ else if eq .flash "created_email_not_configured" }}⚠ Pengguna berhasil dibuat, TAPI SMTP belum dikonfigurasi di .env — email TIDAK terkirim. Set SMTP_USER/SMTP_PASSWORD lalu restart server.
+        {{ else if eq .flash "updated" }}✓ Pengguna berhasil diperbarui
+        {{ else if eq .flash "deleted" }}✓ Pengguna berhasil dihapus
+        {{ else if eq .flash "password_reset" }}✓ Password baru berhasil dibuat dan dikirim ke email pengguna
+        {{ else if eq .flash "password_reset_email_failed" }}⚠ Password berhasil direset, TAPI email gagal terkirim. Cek log server, atau beri tahu password baru ke user secara manual.
+        {{ else if eq .flash "password_reset_email_not_configured" }}⚠ Password berhasil direset, TAPI SMTP belum dikonfigurasi di .env — email TIDAK terkirim. Set SMTP_USER/SMTP_PASSWORD lalu restart server.
+        {{ else if eq .flash "reset_failed" }}⚠ Gagal mereset password, coba lagi
+        {{ else }}✓ {{ .flash }}{{ end }}
+      </div>
+      {{ end }}
+
+      <div class="card fade-in">
+        {{ if not .users }}
+        <div class="empty-state"><div class="empty-icon">👥</div>Belum ada pengguna</div>
+        {{ else }}
+        <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            {{ range .users }}
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:.6rem">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--primary-light);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0">{{ slice .Name 0 2 }}</div>
+                  <span class="td-main">{{ .Name }}</span>
+                </div>
+              </td>
+              <td class="td-muted">{{ .Email }}</td>
+              <td>
+                <span class="badge
+                  {{ if eq .Role.Name "super_admin" }}badge-blue
+                  {{ else if eq .Role.Name "content_editor" }}badge-purple
+                  {{ else if eq .Role.Name "reviewer" }}badge-orange
+                  {{ else }}badge-green{{ end }}">
+                  {{ .Role.DisplayName }}
+                </span>
+              </td>
+              <td>
+                {{ if .IsActive }}<span class="badge badge-green">Aktif</span>
+                {{ else }}<span class="badge badge-red">Nonaktif</span>{{ end }}
+                {{ if .MustChangePassword }}
+                <span class="badge badge-yellow" style="margin-left:4px" title="Masih memakai password sementara">🔑 Belum ganti password</span>
+                {{ end }}
+              </td>
+              <td>
+                <div class="actions">
+                  <a href="/cms/users/{{ .ID }}/edit" class="btn btn-sm btn-blue-ghost">Edit</a>
+                  <form method="POST" action="/cms/users/{{ .ID }}/delete" onsubmit="return confirm('Hapus pengguna ini?')">
+                    <button class="btn btn-sm btn-danger-ghost">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+(function () {
+  var flash = document.getElementById('flashMsg');
+  if (!flash) return;
+  var delay = parseInt(flash.getAttribute('data-autohide'), 10) || 4000;
+  setTimeout(function () {
+    flash.classList.add('flash-hide');
+  }, delay);
+})();
+</script>
+</body>
+</html>
+{{end}}

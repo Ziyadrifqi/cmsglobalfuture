@@ -1,0 +1,112 @@
+{{define "cms/news_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Manajemen Berita</div>
+        <div class="topbar-sub">Kelola artikel dan pengumuman yayasan</div>
+      </div>
+      </div>
+      <a href="/cms/news/create" class="btn btn-primary">+ Tulis Berita</a>
+    </div>
+    <div class="page-content">
+      {{ if .flash }}
+      <div class="flash flash-success">✓ {{ .flash }}</div>
+      {{ end }}
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;">
+        <div class="tab-bar">
+          {{ range $tab := slice "" "published" "draft" "pending_review" }}
+          <a href="/cms/news{{ if $tab }}?status={{ $tab }}{{ end }}"
+             class="tab-item {{ if eq $.status $tab }}active{{ end }}">
+            {{ if eq $tab "" }}Semua{{ else if eq $tab "published" }}Published{{ else if eq $tab "draft" }}Draft{{ else }}Review{{ end }}
+          </a>
+          {{ end }}
+        </div>
+        <form method="GET" action="/cms/news" class="search-bar">
+          {{ if .status }}<input type="hidden" name="status" value="{{ .status }}"/>{{ end }}
+          <input type="text" name="q" value="{{ .search }}" placeholder="Cari judul..." class="search-input"/>
+          <button type="submit" class="btn btn-ghost">Cari</button>
+        </form>
+      </div>
+
+      <div class="card fade-in">
+        {{ if not .news }}
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          Belum ada berita
+        </div>
+        {{ else }}
+        <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:40%">Judul</th>
+            <th>Penulis</th>
+            <th>Status</th>
+            <th>Tanggal</th>
+            <th></th>
+          </tr></thead>
+          <tbody>
+            {{ range .news }}
+            <tr>
+              <td class="td-main">{{ .Title }}</td>
+              <td class="td-muted">{{ .Author.Name }}</td>
+              <td>
+                {{ if eq .Status "published" }}<span class="badge badge-green">● Published</span>
+                {{ else if eq .Status "draft" }}<span class="badge badge-yellow">● Draft</span>
+                {{ else }}<span class="badge badge-orange">● Review</span>{{ end }}
+              </td>
+              <td class="td-muted" style="font-size:.75rem">{{ .CreatedAt.Format "02 Jan 2006" }}</td>
+              <td>
+                <div class="actions">
+                  {{ if eq .Status "draft" }}
+                  <form method="POST" action="/cms/news/{{ .ID }}/submit-review">
+                    <button class="btn btn-sm btn-orange-ghost">Ajukan Review</button>
+                  </form>
+                  {{ end }}
+                  {{ if eq .Status "pending_review" }}
+                  <form method="POST" action="/cms/news/{{ .ID }}/approve">
+                    <button class="btn btn-sm btn-ghost" style="color:#16A34A;border-color:#BBF7D0;background:#F0FDF4">✓ Approve</button>
+                  </form>
+                  <form method="POST" action="/cms/news/{{ .ID }}/reject">
+                    <button class="btn btn-sm btn-danger-ghost">✕ Tolak</button>
+                  </form>
+                  {{ end }}
+                  <a href="/cms/news/{{ .ID }}/edit" class="btn btn-sm btn-blue-ghost">Edit</a>
+                  <form method="POST" action="/cms/news/{{ .ID }}/delete" onsubmit="return confirm('Hapus berita ini?')">
+                    <button class="btn btn-sm btn-danger-ghost">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

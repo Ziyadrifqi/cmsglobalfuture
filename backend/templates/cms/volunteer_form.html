@@ -1,0 +1,79 @@
+{{define "cms/volunteer_form.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">{{ .title }}</div>
+        <div class="topbar-sub"><a href="/cms/volunteers" style="color:var(--primary);text-decoration:none">← Kembali ke daftar rekrutmen</a></div>
+      </div>
+      </div>
+    </div>
+    <div class="page-content" style="max-width:820px">
+      <form method="POST" action="{{ if .is_edit }}/cms/volunteers/{{ .volunteer.ID }}/edit{{ else }}/cms/volunteers/create{{ end }}">
+        <div class="form-card mb-4 fade-in">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="field-label">Judul Rekrutmen *</label>
+              <input type="text" name="title" required value="{{ if .is_edit }}{{ .volunteer.Title }}{{ end }}" placeholder="cth: Relawan Penanaman Mangrove Kepulauan Seribu"/>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Divisi / Program</label>
+              <input type="text" name="division" value="{{ if .is_edit }}{{ .volunteer.Division }}{{ end }}" placeholder="cth: Program Lingkungan"/>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Lokasi</label>
+              <input type="text" name="location" value="{{ if .is_edit }}{{ .volunteer.Location }}{{ end }}" placeholder="cth: Jakarta, Remote"/>
+            </div>
+            <div class="form-group">
+              <label class="field-label">Tipe Kegiatan</label>
+              <select name="type">
+                <option value="regular"  {{ if and .is_edit (eq .volunteer.Type "regular")  }}selected{{ end }}>Reguler</option>
+                <option value="event"    {{ if and .is_edit (eq .volunteer.Type "event")    }}selected{{ end }}>Event</option>
+                <option value="remote"   {{ if and .is_edit (eq .volunteer.Type "remote")   }}selected{{ end }}>Remote</option>
+                <option value="training" {{ if and .is_edit (eq .volunteer.Type "training") }}selected{{ end }}>Pelatihan</option>
+              </select>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Deskripsi Kegiatan *</label>
+              <textarea name="description" rows="7" required placeholder="Jelaskan kegiatan relawan, tujuan, dan dampaknya...">{{ if .is_edit }}{{ .volunteer.Description }}{{ end }}</textarea>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Kualifikasi &amp; Syarat *</label>
+              <textarea name="requirements" rows="6" required placeholder="Persyaratan usia, kemampuan, ketersediaan waktu, dll...">{{ if .is_edit }}{{ .volunteer.Requirements }}{{ end }}</textarea>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Yang Didapatkan Relawan <span style="font-weight:400;color:#94A3B8">(opsional)</span></label>
+              <textarea name="benefits" rows="5" placeholder="Sertifikat, pelatihan, pengalaman, networking, dll...">{{ if .is_edit }}{{ .volunteer.Benefits }}{{ end }}</textarea>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/cms/volunteers" class="btn btn-ghost">Batal</a>
+          <button type="submit" class="btn btn-success">{{ if .is_edit }}💾 Simpan Perubahan{{ else }}🌿 Publikasikan Rekrutmen{{ end }}</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

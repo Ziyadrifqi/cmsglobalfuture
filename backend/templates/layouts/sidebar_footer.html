@@ -1,0 +1,74 @@
+{{define "sidebar_footer"}}
+<div class="sidebar-footer">
+  <a href="/cms/profile">
+    <div class="user-info">
+      <div class="user-avatar">
+        {{ if .session_user_avatar }}
+        <img src="{{ .session_user_avatar }}" alt="Avatar"/>
+        {{ else }}
+        {{ if .session_user_name }}{{ slice .session_user_name 0 2 }}{{ end }}
+        {{ end }}
+      </div>
+      <div><div class="user-name">{{ .session_user_name }}</div><div class="user-role">{{ .session_user_role_display }}</div></div>
+    </div>
+  </a>
+  <button type="button" class="btn-logout" onclick="openLogoutModal()">Keluar</button>
+</div>
+
+<div class="modal-backdrop" id="logoutModal">
+  <div class="modal" style="max-width:360px;text-align:center">
+    <div style="font-size:2.2rem;margin-bottom:.5rem">🚪</div>
+    <div class="modal-title" style="font-size:1rem;margin-bottom:.4rem">Yakin mau keluar?</div>
+    <p style="font-size:.82rem;color:var(--text-muted);margin-bottom:1.25rem">
+      Anda akan keluar dari sesi CMS ini dan perlu login kembali untuk melanjutkan.
+    </p>
+    <div class="flex gap-2">
+      <button type="button" onclick="closeLogoutModal()" class="btn btn-ghost" style="flex:1">Batal</button>
+      <form method="POST" action="/cms/logout" style="flex:1;margin:0">
+        <button type="submit" class="btn" style="width:100%;background:var(--danger);color:#fff">Ya, Keluar</button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function openLogoutModal() {
+  document.getElementById('logoutModal').classList.add('open');
+}
+function closeLogoutModal() {
+  document.getElementById('logoutModal').classList.remove('open');
+}
+document.getElementById('logoutModal').addEventListener('click', function(e){
+  if (e.target === this) closeLogoutModal();
+});
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') closeLogoutModal();
+});
+</script>
+
+<script>
+// Auto-hide untuk SEMUA elemen .flash di halaman manapun (news, gallery,
+// banner, volunteer, applicant, profile, users, dll) — taruh sekali di
+// sini (di-include lewat sidebar_footer di semua halaman CMS) supaya
+// tidak perlu copy-paste script ini ke tiap file list satu-satu.
+//
+// Durasi auto-hide dibedakan: flash yang berisi kelas flash-error atau
+// flash-warning bertahan lebih lama, karena isinya biasanya info penting
+// yang perlu dibaca admin (misal: email gagal terkirim). Flash sukses
+// biasa hilang lebih cepat. Klik pada flash juga langsung
+// menyembunyikannya kapan saja.
+(function () {
+  document.querySelectorAll('.flash').forEach(function (el) {
+    var isImportant = el.classList.contains('flash-error') || el.classList.contains('flash-warning');
+    var delay = isImportant ? 8000 : 3500;
+
+    el.addEventListener('click', function () {
+      el.classList.add('flash-hide');
+    });
+
+    setTimeout(function () {
+      el.classList.add('flash-hide');
+    }, delay);
+  });
+})();
+</script>
+{{end}}

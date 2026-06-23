@@ -1,0 +1,163 @@
+{{define "cms/user_form.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">{{ .title }}</div>
+        <div class="topbar-sub"><a href="/cms/users" style="color:var(--primary);text-decoration:none">← Kembali ke daftar pengguna</a></div>
+      </div>
+      </div>
+    </div>
+    <div class="page-content" style="max-width:560px">
+      {{ if .error_info }}<div class="flash flash-error">⚠ {{ .error_info }}</div>{{ end }}
+
+      {{ if not .is_edit }}
+      <div class="info-banner" style="align-items:flex-start">
+        <span style="font-size:1rem">🔑</span>
+        <div>
+          <strong>Password dibuat otomatis secara acak.</strong> Sistem akan men-generate password
+          unik yang aman untuk pengguna ini (bukan password yang sama untuk semua orang), lalu
+          mengirimkannya ke email pengguna. Pengguna akan diminta mengganti password tersebut
+          saat pertama kali login.
+        </div>
+      </div>
+      {{ end }}
+
+      <form method="POST" action="{{ if .is_edit }}/cms/users/{{ .user.ID }}/edit{{ else }}/cms/users/create{{ end }}">
+        <div class="form-card mb-4 fade-in">
+          <div class="form-grid">
+            <div class="form-group full">
+              <label class="field-label">Nama Lengkap *</label>
+              <input type="text" name="name" required value="{{ if .is_edit }}{{ .user.Name }}{{ end }}" placeholder="Nama lengkap pengguna"/>
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Email *</label>
+              <input type="email" name="email" required value="{{ if .is_edit }}{{ .user.Email }}{{ end }}" placeholder="email@yayasan.local"/>
+              <span class="field-hint">{{ if not .is_edit }}Password yang di-generate sistem akan dikirim ke email ini{{ end }}</span>
+            </div>
+            {{ if .is_edit }}
+            <div class="form-group full">
+              <label class="field-label">Reset Password Manual <span style="font-weight:400;color:#94A3B8">(opsional, kosongkan jika tidak diubah)</span></label>
+              <input type="password" name="password" minlength="6" placeholder="Kosongkan jika tidak ingin reset password"/>
+              <span class="field-hint">Mengisi field ini akan membuat pengguna diminta ganti password lagi saat login.</span>
+            </div>
+            {{ end }}
+            <div class="form-group">
+              <label class="field-label">Role *</label>
+              <select name="role_id" id="roleSelect">
+                {{ range .roles }}
+                <option value="{{ .ID }}" data-role-name="{{ .Name }}" {{ if and $.is_edit (eq $.user.RoleID .ID) }}selected{{ end }}>{{ .DisplayName }}</option>
+                {{ end }}
+              </select>
+            </div>
+            {{ if .is_edit }}
+            <div class="form-group">
+              <label class="field-label">Status Akun</label>
+              <select name="is_active">
+                <option value="1" {{ if .user.IsActive }}selected{{ end }}>Aktif</option>
+                <option value="0" {{ if not .user.IsActive }}selected{{ end }}>Nonaktif</option>
+              </select>
+            </div>
+            {{ end }}
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <a href="/cms/users" class="btn btn-ghost">Batal</a>
+          <button type="submit" class="btn btn-primary">{{ if .is_edit }}💾 Simpan Perubahan{{ else }}+ Buat Pengguna{{ end }}</button>
+        </div>
+      </form>
+
+      {{ if .is_edit }}
+      <div class="card mt-4 fade-in" style="animation-delay:.1s">
+        <div class="card-body" style="padding:1.1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+          <div>
+            <div style="font-weight:700;font-size:.85rem;color:#0F172A">Reset Password Otomatis</div>
+            <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px">Generate password acak baru untuk pengguna ini dan kirim ke emailnya.</div>
+          </div>
+          <button type="button" class="btn btn-orange-ghost" onclick="openResetModal()">🔄 Reset & Kirim Email</button>
+        </div>
+      </div>
+
+      <!-- Modal konfirmasi reset password -->
+      <div class="modal-backdrop" id="resetModal">
+        <div class="modal" style="max-width:400px">
+          <div style="display:flex;align-items:flex-start;gap:.75rem;margin-bottom:1.1rem">
+            <div style="width:42px;height:42px;border-radius:10px;background:#FFF7ED;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">🔑</div>
+            <div>
+              <div class="modal-title" style="margin-bottom:.2rem">Reset password pengguna ini?</div>
+              <p style="font-size:.8rem;color:var(--text-muted);line-height:1.45">
+                Sistem akan membuat password acak baru untuk
+                <strong style="color:#0F172A">{{ .user.Name }}</strong>
+                dan mengirimkannya ke email berikut:
+              </p>
+            </div>
+          </div>
+
+          <div style="background:#F8FAFC;border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+            <span style="font-size:.95rem">📧</span>
+            <span style="font-size:.83rem;font-weight:600;color:#334155">{{ .user.Email }}</span>
+          </div>
+
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:.65rem .85rem;margin-bottom:1.25rem">
+            <p style="color:#B45309;font-size:.76rem;margin:0;line-height:1.4">
+              ⚠ Password lama pengguna ini akan langsung tidak berlaku. Pengguna wajib login dengan password baru dan akan diminta menggantinya.
+            </p>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="button" onclick="closeResetModal()" class="btn btn-ghost" style="flex:1">Batal</button>
+            <form method="POST" action="/cms/users/{{ .user.ID }}/reset-password" style="flex:1;margin:0">
+              <button type="submit" class="btn" style="width:100%;background:#EA580C;color:#fff" id="resetSubmitBtn" onclick="handleResetSubmit(this)">
+                <span id="resetBtnLabel">Ya, Reset &amp; Kirim</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {{ end }}
+
+    </div>
+  </main>
+</div>
+
+<script>
+function openResetModal() {
+  document.getElementById('resetModal').classList.add('open');
+}
+function closeResetModal() {
+  document.getElementById('resetModal').classList.remove('open');
+}
+document.getElementById('resetModal')?.addEventListener('click', function (e) {
+  if (e.target === this) closeResetModal();
+});
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') closeResetModal();
+});
+
+function handleResetSubmit(btn) {
+  btn.disabled = true;
+  document.getElementById('resetBtnLabel').textContent = 'Mengirim email...';
+}
+</script>
+</body>
+</html>
+{{end}}

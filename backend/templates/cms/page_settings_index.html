@@ -1,0 +1,98 @@
+{{define "cms/page_settings_index.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+  <style>
+    .ps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .ps-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.1rem;
+      text-decoration: none;
+      transition: box-shadow .15s, transform .15s, border-color .15s;
+      animation: fadeUp .35s ease both;
+    }
+    .ps-card:hover {
+      box-shadow: 0 6px 24px rgba(0,0,0,.09);
+      transform: translateY(-2px);
+      border-color: var(--primary);
+    }
+    .ps-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; flex-shrink: 0;
+    }
+    .ps-name  { font-weight: 700; font-size: .9rem; color: #0F172A; margin-bottom: 3px; }
+    .ps-desc  { font-size: .72rem; color: var(--text-muted); line-height: 1.45; }
+    .ps-arrow { color: var(--primary); font-weight: 700; flex-shrink: 0; font-size: 1rem; }
+  </style>
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+          <div class="topbar-title">Pengaturan Halaman</div>
+          <div class="topbar-sub">Pilih halaman yang mau diedit kontennya</div>
+        </div>
+      </div>
+    </div>
+    <div class="page-content">
+      {{ if .flash }}<div class="flash flash-success" id="flashMsg">✓ Perubahan berhasil disimpan</div>{{ end }}
+
+      <div class="info-banner mb-4">
+        💡 Setiap kartu di bawah mewakili satu halaman di website portal. Di dalamnya kamu bisa mengubah
+        <strong>teks utama (konten panjang)</strong> maupun <strong>potongan konten kecil</strong> seperti
+        statistik, daftar program, info kontak, dan sebagainya — semuanya dalam satu form.
+      </div>
+
+      <div class="ps-grid">
+        {{ range $i, $p := .pages }}
+        <a href="/cms/page-settings/{{ $p.Slug }}/edit" class="ps-card" style="animation-delay:{{ mul $i 50 }}ms">
+          <div class="ps-icon">{{ $p.Icon }}</div>
+          <div style="flex:1;min-width:0">
+            <div class="ps-name">{{ $p.Name }}</div>
+            <div class="ps-desc">{{ $p.Description }}</div>
+          </div>
+          <div class="ps-arrow">→</div>
+        </a>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+(function(){
+  var f = document.getElementById('flashMsg');
+  if (!f) return;
+  setTimeout(function(){ f.classList.add('flash-hide'); }, 3500);
+  f.addEventListener('click', function(){ f.classList.add('flash-hide'); });
+})();
+</script>
+</body>
+</html>
+{{end}}

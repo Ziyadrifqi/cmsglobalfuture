@@ -1,0 +1,18 @@
+{{define "cms/forbidden.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Akses Ditolak — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body style="background:var(--background)">
+  <div class="forbidden-wrap">
+    <div class="forbidden-icon">🚫</div>
+    <h1 style="font-size:1.5rem;font-weight:800;color:#0F172A">Akses Ditolak</h1>
+    <p style="color:var(--text-muted);font-size:.9rem;margin-top:.25rem">Anda tidak memiliki izin untuk mengakses halaman ini.</p>
+    <a href="/cms/dashboard" class="btn btn-primary" style="margin-top:1rem">← Kembali ke Dashboard</a>
+  </div>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,107 @@
+{{define "cms/applicant_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Global Future Indonesia</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Daftar Pelamar</div>
+        <div class="topbar-sub">{{ .job.Title }}</div>
+      </div>
+       </div>
+      <a href="/cms/jobs" class="btn btn-ghost">← Kembali</a>
+    </div>
+    <div class="page-content">
+      {{ if .flash }}<div class="flash flash-success">✓ Status berhasil diperbarui</div>{{ end }}
+      <div class="card fade-in">
+        {{ if not .applicants }}
+        <div class="empty-state"><div class="empty-icon">👤</div>Belum ada pelamar</div>
+        {{ else }}
+        <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Email</th><th>Telepon</th><th>Status</th><th>Tanggal</th><th></th></tr></thead>
+          <tbody>
+            {{ range .applicants }}
+            <tr>
+              <td class="td-main">{{ .FullName }}</td>
+              <td class="td-muted">{{ .Email }}</td>
+              <td class="td-muted">{{ .Phone }}</td>
+              <td>
+                {{ if eq .Status "applied"   }}<span class="badge badge-gray">Melamar</span>
+                {{ else if eq .Status "screening" }}<span class="badge badge-blue">Seleksi</span>
+                {{ else if eq .Status "interview" }}<span class="badge badge-purple">Interview</span>
+                {{ else if eq .Status "accepted"  }}<span class="badge badge-green">Diterima</span>
+                {{ else }}<span class="badge badge-red">Ditolak</span>{{ end }}
+              </td>
+              <td class="td-muted" style="font-size:.75rem">{{ .CreatedAt.Format "02 Jan 2006" }}</td>
+              <td>
+                <div class="actions">
+                  {{ if .CvPath }}<a href="/cms/jobs/applicants/{{ .ID }}/cv" class="btn btn-sm btn-ghost">📄 CV</a>{{ end }}
+                  <button onclick="openModal({{ .ID }}, '{{ .Status }}')" class="btn btn-sm btn-blue-ghost" type="button">Update Status</button>
+                </div>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal-backdrop" id="modal">
+  <div class="modal">
+    <div class="modal-title">Update Status Pelamar</div>
+    <form method="POST" id="statusForm">
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:1rem">
+        {{ range $s := slice "applied" "screening" "interview" "accepted" "rejected" }}
+        <label style="display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:border-color .15s" class="status-opt">
+          <input type="radio" name="status" value="{{ $s }}" style="accent-color:var(--primary);width:auto"/>
+          <span style="font-size:.83rem">
+            {{ if eq $s "applied" }}Melamar{{ else if eq $s "screening" }}Seleksi Berkas{{ else if eq $s "interview" }}Interview{{ else if eq $s "accepted" }}Diterima{{ else }}Ditolak{{ end }}
+          </span>
+        </label>
+        {{ end }}
+      </div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="field-label">Catatan internal</label>
+        <textarea name="notes" rows="2" placeholder="Opsional..."></textarea>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" onclick="closeModal()" class="btn btn-ghost" style="flex:1">Batal</button>
+        <button type="submit" class="btn btn-primary" style="flex:1">Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openModal(id, cur) {
+  document.getElementById('statusForm').action = '/cms/jobs/applicants/' + id + '/status';
+  document.querySelectorAll('input[name="status"]').forEach(r => { r.checked = r.value === cur; });
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+</script>
+</body>
+</html>
+{{end}}

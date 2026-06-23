@@ -1,0 +1,199 @@
+{{define "cms/gallery_form.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+  <style>
+    .media-preview-wrap {
+      border: 2px dashed var(--border); border-radius: 12px;
+      padding: 1.5rem; text-align: center; background: #FAFAFA;
+      margin-bottom: .5rem; position: relative; cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .media-preview-wrap:hover { border-color: var(--primary); background: var(--primary-light); }
+    .media-preview-wrap input[type=file] {
+      position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+    }
+    .media-preview-img {
+      max-height: 220px; border-radius: 8px; object-fit: contain;
+      margin-bottom: .5rem; max-width: 100%;
+    }
+    .type-toggle { display: flex; gap: .5rem; }
+    .type-btn {
+      flex: 1; padding: .65rem; border-radius: 10px; text-align: center;
+      border: 2px solid var(--border); cursor: pointer; font-size: .83rem;
+      font-weight: 600; color: var(--text-muted); transition: all .15s;
+      background: #FAFAFA;
+    }
+    .type-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+  </style>
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">{{ .title }}</div>
+        <div class="topbar-sub"><a href="/cms/gallery" style="color:var(--primary);text-decoration:none">← Kembali ke galeri</a></div>
+      </div>
+      </div>
+    </div>
+    <div class="page-content" style="max-width:640px">
+      {{ if .error }}<div class="flash flash-error">⚠ {{ .error }}</div>{{ end }}
+
+      <form method="POST"
+            action="{{ if .is_edit }}/cms/gallery/{{ .item.ID }}/edit{{ else }}/cms/gallery/create{{ end }}"
+            enctype="multipart/form-data">
+
+        <div class="form-card mb-4 fade-in">
+
+          <!-- Tipe media -->
+          {{ if not .is_edit }}
+          <div class="form-group full" style="margin-bottom:1.25rem">
+            <label class="field-label">Tipe Media *</label>
+            <div class="type-toggle" id="typeToggle">
+              <div class="type-btn active" id="btnImage" onclick="setType('image')">🖼 Foto / Gambar</div>
+              <div class="type-btn" id="btnVideo" onclick="setType('video')">🎥 Video</div>
+            </div>
+            <input type="hidden" name="type" id="mediaType" value="image"/>
+          </div>
+          {{ else }}
+          <div class="info-banner mb-4" style="font-size:.8rem">
+            Tipe media: <strong>{{ if eq .item.Type "video" }}🎥 Video{{ else }}🖼 Foto{{ end }}</strong>
+            <input type="hidden" name="type" value="{{ .item.Type }}"/>
+          </div>
+          {{ end }}
+
+          <div class="form-grid">
+            <!-- Upload file utama -->
+            <div class="form-group full">
+              <label class="field-label" id="fileLabel">File Media {{ if not .is_edit }}*{{ end }}</label>
+              {{ if .is_edit }}{{ if .item.URL }}
+              <div style="margin-bottom:.5rem">
+                {{ if eq .item.Type "video" }}
+                <video src="{{ .item.URL }}" style="max-height:180px;border-radius:8px;border:1px solid var(--border)" controls></video>
+                {{ else }}
+                <img src="{{ .item.URL }}" style="max-height:180px;border-radius:8px;border:1px solid var(--border);object-fit:contain" alt="preview"/>
+                {{ end }}
+              </div>
+              {{ end }}{{ end }}
+              <div class="media-preview-wrap" id="dropZone">
+                <div id="dropPlaceholder">
+                  <div style="font-size:2rem;margin-bottom:.4rem" id="dropIcon">🖼</div>
+                  <div style="font-size:.82rem;color:var(--text-muted)">Klik atau drag &amp; drop file</div>
+                  <div class="field-hint" id="dropHint">JPG, PNG, WebP, GIF — maks 10MB</div>
+                </div>
+                <img id="previewImg" class="media-preview-img" style="display:none"/>
+                <input type="file" name="media_file" id="mediaFileInput" {{ if not .is_edit }}required{{ end }}
+                       accept="image/*,video/mp4,video/webm,video/ogg" onchange="previewMedia(event)"/>
+              </div>
+              <span class="field-hint" id="fileHint">Untuk video: MP4, WebM, OGG — maks 100MB</span>
+            </div>
+
+            <!-- Thumbnail (opsional, khusus video atau override) -->
+            <div class="form-group full" id="thumbGroup">
+              <label class="field-label">Thumbnail <span style="font-weight:400;color:#94A3B8">(opsional{{ if .is_edit }}, upload baru untuk mengganti{{ end }})</span></label>
+              {{ if .is_edit }}{{ if .item.ThumbnailURL }}
+              <img src="{{ .item.ThumbnailURL }}" style="height:80px;border-radius:8px;border:1px solid var(--border);object-fit:cover;margin-bottom:.4rem;display:block"/>
+              {{ end }}{{ end }}
+              <input type="file" name="thumbnail_file" accept="image/*"/>
+              <span class="field-hint">Wajib untuk video. JPG, PNG, WebP — rasio 16:9 disarankan.</span>
+            </div>
+
+            <div class="form-group full">
+              <label class="field-label">Judul *</label>
+              <input type="text" name="title" required value="{{ if .is_edit }}{{ .item.Title }}{{ end }}" placeholder="Deskripsi singkat media ini"/>
+            </div>
+
+            <div class="form-group full">
+              <label class="field-label">Caption <span style="font-weight:400;color:#94A3B8">(opsional)</span></label>
+              <textarea name="caption" rows="2" placeholder="Keterangan tambahan...">{{ if .is_edit }}{{ .item.Caption }}{{ end }}</textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Kategori</label>
+              <select name="category_id">
+                <option value="">— Tanpa Kategori —</option>
+                {{ range .categories }}
+                <option value="{{ .ID }}" {{ if and $.is_edit (and $.item.CategoryID (eq (deref $.item.CategoryID) .ID)) }}selected{{ end }}>
+                  {{ .Name }}
+                </option>
+                {{ end }}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Urutan Tampil</label>
+              <input type="number" name="order_num" min="0" value="{{ if .is_edit }}{{ .item.OrderNum }}{{ else }}0{{ end }}" style="max-width:120px"/>
+            </div>
+
+            <div class="form-group">
+              <label class="field-label">Visibilitas</label>
+              <div style="display:flex;gap:1rem;align-items:center;padding:.5rem 0">
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                  <input type="radio" name="is_active" value="1" {{ if or (not .is_edit) (and .is_edit .item.IsActive) }}checked{{ end }} style="accent-color:var(--primary);width:auto"/> Tampil
+                </label>
+                <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem">
+                  <input type="radio" name="is_active" value="0" {{ if and .is_edit (not .item.IsActive) }}checked{{ end }} style="accent-color:var(--primary);width:auto"/> Sembunyikan
+                </label>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <a href="/cms/gallery" class="btn btn-ghost">Batal</a>
+          <button type="submit" class="btn btn-primary">{{ if .is_edit }}💾 Simpan Perubahan{{ else }}+ Tambah ke Galeri{{ end }}</button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+<script>
+function setType(type) {
+  document.getElementById('mediaType').value = type;
+  document.getElementById('btnImage').classList.toggle('active', type === 'image');
+  document.getElementById('btnVideo').classList.toggle('active', type === 'video');
+  document.getElementById('dropIcon').textContent = type === 'video' ? '🎥' : '🖼';
+  document.getElementById('dropHint').textContent = type === 'video'
+    ? 'MP4, WebM, OGG — maks 100MB' : 'JPG, PNG, WebP, GIF — maks 10MB';
+  document.getElementById('fileLabel').textContent =
+    (type === 'video' ? 'File Video' : 'File Gambar') + ' *';
+  document.getElementById('mediaFileInput').accept =
+    type === 'video' ? 'video/mp4,video/webm,video/ogg' : 'image/*';
+}
+
+function previewMedia(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = document.getElementById('previewImg');
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = ev => { img.src = ev.target.result; img.style.display = 'block'; };
+    reader.readAsDataURL(file);
+    document.getElementById('dropPlaceholder').style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    document.getElementById('dropPlaceholder').style.display = 'block';
+    document.getElementById('dropIcon').textContent = '🎥';
+    document.getElementById('dropHint').textContent = file.name;
+  }
+}
+</script>
+</body>
+</html>
+{{end}}

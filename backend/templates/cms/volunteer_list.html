@@ -1,0 +1,112 @@
+{{define "cms/volunteer_list.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    {{template "sidebar_footer" .}}
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Manajemen Relawan</div>
+        <div class="topbar-sub">Kelola rekrutmen relawan Green Future Indonesia</div>
+      </div>
+      </div>
+      <a href="/cms/volunteers/create" class="btn btn-success">+ Buka Rekrutmen</a>
+    </div>
+    <div class="page-content">
+      {{ if .flash }}
+      <div class="flash flash-success">✓
+        {{ if eq .flash "created" }}Rekrutmen berhasil dibuka
+        {{ else if eq .flash "updated" }}Rekrutmen berhasil diperbarui
+        {{ else if eq .flash "deleted" }}Rekrutmen berhasil dihapus
+        {{ else if eq .flash "closed"  }}Rekrutmen berhasil ditutup
+        {{ else }}{{ .flash }}{{ end }}
+      </div>
+      {{ end }}
+
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem">
+        <div class="tab-bar">
+          {{ range $tab := slice "" "active" "closed" "draft" }}
+          <a href="/cms/volunteers{{ if $tab }}?status={{ $tab }}{{ end }}"
+             class="tab-item {{ if eq $.status $tab }}active{{ end }}">
+            {{ if eq $tab "" }}Semua{{ else if eq $tab "active" }}Aktif{{ else if eq $tab "closed" }}Ditutup{{ else }}Draft{{ end }}
+          </a>
+          {{ end }}
+        </div>
+        <form method="GET" action="/cms/volunteers" class="search-bar">
+          {{ if .status }}<input type="hidden" name="status" value="{{ .status }}"/>{{ end }}
+          <input type="text" name="q" value="{{ .search }}" placeholder="Cari rekrutmen..." class="search-input"/>
+          <button type="submit" class="btn btn-ghost">Cari</button>
+        </form>
+      </div>
+
+      <div class="card fade-in">
+        {{ if not .volunteers }}
+        <div class="empty-state"><div class="empty-icon">🌱</div>Belum ada rekrutmen relawan</div>
+        {{ else }}
+        <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Judul</th><th>Divisi</th><th>Lokasi</th><th>Tipe</th><th>Status</th><th>Dibuka</th><th></th>
+          </tr></thead>
+          <tbody>
+            {{ range .volunteers }}
+            <tr>
+              <td class="td-main">{{ .Title }}</td>
+              <td class="td-muted">{{ .Division }}</td>
+              <td class="td-muted">{{ if .Location }}📍 {{ .Location }}{{ else }}—{{ end }}</td>
+              <td class="td-muted">
+                {{ if eq .Type "regular" }}Reguler
+                {{ else if eq .Type "event" }}Event
+                {{ else if eq .Type "remote" }}Remote
+                {{ else if eq .Type "training" }}Pelatihan
+                {{ else }}{{ .Type }}{{ end }}
+              </td>
+              <td>
+                {{ if eq .Status "active" }}<span class="badge badge-green">● Aktif</span>
+                {{ else if eq .Status "closed" }}<span class="badge badge-red">● Ditutup</span>
+                {{ else }}<span class="badge badge-gray">● Draft</span>{{ end }}
+              </td>
+              <td class="td-muted" style="font-size:.75rem">{{ .CreatedAt.Format "02 Jan 2006" }}</td>
+              <td>
+                <div class="actions">
+                  <a href="/cms/volunteers/{{ .ID }}/applicants" class="btn btn-sm btn-purple-ghost">Pendaftar</a>
+                  <a href="/cms/volunteers/{{ .ID }}/edit" class="btn btn-sm btn-blue-ghost">Edit</a>
+                  {{ if eq .Status "active" }}
+                  <form method="POST" action="/cms/volunteers/{{ .ID }}/close" onsubmit="return confirm('Tutup rekrutmen ini?')">
+                    <button class="btn btn-sm btn-danger-ghost">Tutup</button>
+                  </form>
+                  {{ end }}
+                  <form method="POST" action="/cms/volunteers/{{ .ID }}/delete" onsubmit="return confirm('Hapus rekrutmen ini?')">
+                    <button class="btn btn-sm btn-danger-ghost">Hapus</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
+{{end}}

@@ -1,0 +1,226 @@
+{{define "cms/profile.html"}}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ .title }} — Yayasan CMS</title>
+  {{template "cms_styles" .}}
+  <style>
+    .avatar-upload-wrap {
+      display: flex; align-items: center; gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .avatar-preview {
+      width: 84px; height: 84px; border-radius: 50%;
+      object-fit: cover; flex-shrink: 0;
+      border: 3px solid var(--card);
+      box-shadow: 0 0 0 1px var(--border);
+      background: var(--primary-light);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 700; color: var(--primary);
+      transition: transform .2s;
+    }
+    .avatar-preview.has-img:hover { transform: scale(1.04); }
+    .avatar-upload-actions { display: flex; flex-direction: column; gap: .4rem; }
+    .avatar-file-label {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .5rem .9rem; border-radius: 8px;
+      background: var(--primary-light); color: var(--primary);
+      border: 1px solid #BFDBFE; font-size: .8rem; font-weight: 600;
+      cursor: pointer; transition: background .15s; width: fit-content;
+    }
+    .avatar-file-label:hover { background: #DBEAFE; }
+    .avatar-file-input { display: none; }
+    .avatar-filename { font-size: .73rem; color: var(--text-muted); }
+
+    .profile-tabs { display: flex; gap: 2px; background: #F1F5F9; padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 1.25rem; }
+    .profile-tab-btn {
+      padding: .5rem 1.1rem; border-radius: 7px; font-size: .82rem; font-weight: 600;
+      color: var(--text-muted); cursor: pointer; border: none; background: transparent;
+      transition: background .15s, color .15s;
+    }
+    .profile-tab-btn.active { background: #fff; color: #0F172A; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .profile-panel { display: none; animation: fadeUp .3s ease; }
+    .profile-panel.active { display: block; }
+
+    .role-pill {
+      display: inline-flex; align-items: center; gap: .35rem;
+      padding: .3rem .7rem; border-radius: 20px;
+      background: var(--primary-light); color: var(--primary);
+      font-size: .75rem; font-weight: 600;
+    }
+    .pw-strength { height: 4px; border-radius: 3px; background: #E2E8F0; margin-top: .4rem; overflow: hidden; }
+    .pw-strength-bar { height: 100%; width: 0%; background: var(--danger); transition: width .25s, background .25s; }
+  </style>
+</head>
+<body>
+{{template "page_loader" .}}
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🏛️</div>
+      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+    </div>
+    <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
+    <div class="sidebar-footer">
+      <a href="/cms/profile" style="text-decoration:none">
+        <div class="user-info">
+          <div class="user-avatar" style="overflow:hidden">
+            {{ if .session_user_name }}{{ slice .session_user_name 0 2 }}{{ end }}
+          </div>
+          <div><div class="user-name">{{ .session_user_name }}</div><div class="user-role">{{ .session_user_role_display }}</div></div>
+        </div>
+      </a>
+      <form method="POST" action="/cms/logout"><button class="btn-logout">Keluar</button></form>
+    </div>
+  </aside>
+  <main class="main">
+   <div class="topbar">
+      <div class="topbar-title-wrap">
+        <button type="button" class="hamburger-btn">☰</button>
+        <div>
+        <div class="topbar-title">Profil Saya</div>
+        <div class="topbar-sub">Kelola informasi akun dan keamanan Anda</div>
+      </div>
+    </div>
+   </div>
+    <div class="page-content" style="max-width:680px">
+
+      {{ if .flash }}
+      <div class="flash flash-success">
+        ✓ {{ if eq .flash "updated" }}Profil berhasil diperbarui{{ else if eq .flash "password_updated" }}Password berhasil diubah{{ else }}Berhasil{{ end }}
+      </div>
+      {{ end }}
+
+      <div class="card fade-in mb-4">
+        <div class="card-body" style="padding:1.5rem">
+          <div class="avatar-upload-wrap">
+            {{ if .user.Avatar }}
+            <img src="{{ .user.Avatar }}" class="avatar-preview has-img" id="avatarPreview" alt="Avatar"/>
+            {{ else }}
+            <div class="avatar-preview" id="avatarPreview">{{ slice .user.Name 0 2 }}</div>
+            {{ end }}
+            <div>
+              <div style="font-size:1.05rem;font-weight:700;color:#0F172A">{{ .user.Name }}</div>
+              <div style="font-size:.8rem;color:var(--text-muted);margin-bottom:.4rem">{{ .user.Email }}</div>
+              <span class="role-pill">● {{ .user.Role.DisplayName }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-tabs">
+        <button type="button" class="profile-tab-btn active" onclick="switchTab('info', this)">Informasi Akun</button>
+        <button type="button" class="profile-tab-btn" onclick="switchTab('password', this)">Ubah Password</button>
+      </div>
+
+      <!-- ── Tab: Informasi Akun ── -->
+      <div class="profile-panel active" id="panel-info">
+        {{ if .error_info }}<div class="flash flash-error">⚠ {{ .error_info }}</div>{{ end }}
+        <form method="POST" action="/cms/profile" enctype="multipart/form-data">
+          <div class="form-card mb-4">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="field-label">Foto Profil</label>
+                <div style="display:flex;align-items:center;gap:1rem">
+                  <label class="avatar-file-label">
+                    📷 Pilih Foto Baru
+                    <input type="file" name="avatar" accept="image/*" class="avatar-file-input" id="avatarInput" onchange="previewAvatar(event)"/>
+                  </label>
+                  <span class="avatar-filename" id="avatarFilename">JPG, PNG, WebP — maks 2MB</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="field-label">Nama Lengkap *</label>
+                <input type="text" name="name" required value="{{ .user.Name }}" placeholder="Nama lengkap Anda"/>
+              </div>
+              <div class="form-group full">
+                <label class="field-label">Email *</label>
+                <input type="email" name="email" required value="{{ .user.Email }}" placeholder="email@yayasan.local"/>
+              </div>
+              <div class="form-group full">
+                <label class="field-label">Role</label>
+                <input type="text" value="{{ .user.Role.DisplayName }}" disabled style="background:#F1F5F9;color:var(--text-muted);cursor:not-allowed"/>
+                <span class="field-hint">Role hanya dapat diubah oleh Super Admin</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- ── Tab: Ubah Password ── -->
+      <div class="profile-panel" id="panel-password">
+        {{ if .error_password }}<div class="flash flash-error">⚠ {{ .error_password }}</div>{{ end }}
+        <form method="POST" action="/cms/profile/password">
+          <div class="form-card mb-4">
+            <div class="form-grid">
+              <div class="form-group full">
+                <label class="field-label">Password Lama *</label>
+                <input type="password" name="old_password" required placeholder="Masukkan password Anda saat ini"/>
+              </div>
+              <div class="form-group full">
+                <label class="field-label">Password Baru *</label>
+                <input type="password" name="new_password" id="newPassword" required minlength="6" placeholder="Minimal 6 karakter" oninput="checkStrength(this.value)"/>
+                <div class="pw-strength"><div class="pw-strength-bar" id="pwStrengthBar"></div></div>
+              </div>
+              <div class="form-group full">
+                <label class="field-label">Konfirmasi Password Baru *</label>
+                <input type="password" name="confirm_password" required minlength="6" placeholder="Ulangi password baru"/>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary">🔒 Ubah Password</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </main>
+</div>
+<script>
+function switchTab(name, btn) {
+  document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.profile-tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function previewAvatar(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  document.getElementById('avatarFilename').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    const preview = document.getElementById('avatarPreview');
+    const img = document.createElement('img');
+    img.src = ev.target.result;
+    img.className = 'avatar-preview has-img';
+    img.id = 'avatarPreview';
+    preview.replaceWith(img);
+  };
+  reader.readAsDataURL(file);
+}
+
+function checkStrength(val) {
+  const bar = document.getElementById('pwStrengthBar');
+  let score = 0;
+  if (val.length >= 6) score += 30;
+  if (val.length >= 10) score += 20;
+  if (/[A-Z]/.test(val)) score += 20;
+  if (/[0-9]/.test(val)) score += 15;
+  if (/[^A-Za-z0-9]/.test(val)) score += 15;
+  bar.style.width = Math.min(score, 100) + '%';
+  bar.style.background = score < 40 ? '#EF4444' : score < 70 ? '#F59E0B' : '#22C55E';
+}
+
+{{ if .error_password }}
+switchTab('password', document.querySelectorAll('.profile-tab-btn')[1]);
+{{ end }}
+</script>
+</body>
+</html>
+{{end}}
