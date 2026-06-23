@@ -1,115 +1,115 @@
-# Yayasan CMS + Portal
+CMS + Portal
 
-## Arsitektur
+Sistem CMS dan Portal Publik berbasis Go (Gin) dan React (Vite + TypeScript) dengan arsitektur terpisah antara backend CMS dan frontend portal.
 
-```
-Go (Gin)                          React (Vite + TS)
-├── CMS Panel (/cms/...)    ─┐    Portal Publik
-│   Render HTML template    │    ├── Beranda
-│   Login pakai session     │    ├── Berita
-│                           │    ├── Karier + Form Lamaran
-└── REST API (/api/v1/...)  ─┘─→  ├── Tentang
-    Kirim JSON ke React          └── Kontak
-```
+🏗 Arsitektur
+Go (Gin Backend) React (Vite + TS)
+├── CMS Panel (Server Render) ─┐ Portal Publik
+│ - Authentication │ ├── Beranda
+│ - Content Management │ ├── Berita
+│ │ ├── Karier
+└── REST API ─┘→ ├── Tentang
+JSON API untuk frontend └── Kontak
+🚀 Cara Menjalankan
 
----
+1. Database (PostgreSQL via Docker)
+   docker compose up -d
+2. Backend (Go - Gin)
+   cd backend
+   cp .env.example .env
+   go mod tidy
+   go run ./cmd/app/
 
-## Cara Menjalankan
+Backend akan berjalan di:
 
-### 1. Database
-```bash
-docker compose up -d
-```
+http://localhost:8080
 
-### 2. Backend (Go)
-```bash
-cd backend
-cp .env.example .env
-go mod tidy
-go run ./cmd/app/
+CMS Panel:
 
-# Output:
-# ✓ Database terhubung
-# ✓ Admin default: admin@yayasan.local / Admin@123
-# Server jalan di http://localhost:8080
-# CMS Panel: http://localhost:8080/cms/login
-```
-
-### 3. Frontend Portal (React)
-```bash
+http://localhost:8080/cms/login 3. Frontend (React - Vite + TypeScript)
 cd frontend
 cp .env.example .env
 npm install
 npm run dev
 
-# Buka http://localhost:5173
-```
+Akses portal:
 
----
+http://localhost:5173
+🔐 Akun Default (Development Only)
 
-## Akun Default
+Digunakan hanya untuk kebutuhan development lokal
 
-| Email                  | Password   | Role        |
-|------------------------|------------|-------------|
-| admin@yayasan.local    | Admin@123  | Super Admin |
-
----
-
-## URL Penting
-
-| URL                              | Keterangan               |
-|----------------------------------|--------------------------|
-| http://localhost:8080/cms/login  | Login CMS panel (Go)     |
-| http://localhost:8080/api/v1/... | REST API                 |
-| http://localhost:5173            | Portal publik (React)    |
-
----
-
-## Struktur Folder
-
-```
+Role Email Password
+Admin admin@example.local (set via seed / env)
+🌐 Endpoint Utama
+URL Keterangan
+/cms/login Login CMS Panel
+/api/v1/\* REST API Backend
+http://localhost:5173 Portal Publik
+📁 Struktur Proyek
 cms-project/
-├── backend/                    ← Go (Gin)
-│   ├── cmd/app/main.go         ← Entry point
-│   ├── config/                 ← Konfigurasi & DB
-│   ├── internal/
-│   │   ├── domain/models.go    ← Semua struct entitas
-│   │   ├── repo/               ← Query database
-│   │   ├── handler/            ← HTTP handler
-│   │   └── middleware/         ← Auth session & JWT
-│   ├── templates/              ← HTML template CMS
-│   │   ├── layouts/            ← Layout & sidebar
-│   │   ├── auth/               ← Halaman login
-│   │   └── cms/                ← Semua halaman CMS
-│   ├── static/                 ← File statis (CSS, upload)
-│   └── migrations/             ← Auto migrate + seed
+├── backend/
+│ ├── cmd/app/ # Entry point aplikasi
+│ ├── config/ # Konfigurasi & database
+│ ├── internal/
+│ │ ├── domain/ # Model/entity
+│ │ ├── repo/ # Query database
+│ │ ├── handler/ # HTTP handler
+│ │ └── middleware/ # Auth & middleware
+│ ├── templates/ # HTML CMS (server-rendered)
+│ │ ├── layouts/
+│ │ ├── auth/
+│ │ └── cms/
+│ ├── static/ # Asset CSS, upload file
+│ └── migrations/ # Database migration & seed
 │
-├── frontend/                   ← React (Vite + TS)
-│   └── src/
-│       ├── api/index.ts        ← Semua panggilan API ke Go
-│       ├── components/layout/  ← Navbar & Footer
-│       └── pages/              ← Halaman portal
+├── frontend/
+│ └── src/
+│ ├── api/ # API client
+│ ├── components/ # UI components
+│ └── pages/ # Halaman portal
 │
-└── docker-compose.yml          ← PostgreSQL lokal
-```
-
----
-
-## 4 Role
-
-| Role             | Akses CMS                           |
-|------------------|-------------------------------------|
-| super_admin      | Semua fitur                         |
-| content_editor   | Berita, Banner, Halaman             |
-| reviewer         | Review & approve berita             |
-| hr_recruitment   | Lowongan & Pelamar                  |
-
-## Approval Flow Berita
-
-```
+└── docker-compose.yml # PostgreSQL setup
+👥 Role System
+Role Akses
+super_admin Semua fitur
+content_editor Kelola berita, banner, halaman
+reviewer Review & approve konten
+hr_recruitment Kelola lowongan & pelamar
+🔄 Workflow Berita
 Content Editor
-      ↓ Ajukan Review
-Reviewer / Super Admin
-      ↓ Approve
-    Published (tampil di portal)
-```
+↓ Submit
+Reviewer / Admin
+↓ Review & Approve
+Published → Tampil di Portal Publik
+⚙️ Tech Stack
+
+Backend
+
+Go (Gin Framework)
+PostgreSQL
+HTML Templates (CMS)
+REST API
+
+Frontend
+
+React
+Vite
+TypeScript
+Axios
+
+DevOps
+
+Docker Compose
+📝 Catatan
+Project ini menggunakan environment lokal untuk development
+Semua konfigurasi sensitif disimpan di file .env
+Struktur dibuat modular agar mudah dikembangkan
+📌 Tujuan Project
+
+Project ini dibuat untuk sistem informasi yayasan yang memiliki:
+
+CMS internal untuk manajemen konten
+Portal publik untuk user umum
+Role-based access control (RBAC)
+REST API untuk integrasi frontend
