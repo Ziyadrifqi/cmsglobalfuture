@@ -8,36 +8,63 @@
   <style>
     .ps-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px,1fr));
       gap: 1rem;
     }
     .ps-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      background: var(--card);
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 1.25rem 1.1rem;
-      text-decoration: none;
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--card); border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 1.25rem 1.1rem; text-decoration: none;
       transition: box-shadow .15s, transform .15s, border-color .15s;
       animation: fadeUp .35s ease both;
     }
     .ps-card:hover {
       box-shadow: 0 6px 24px rgba(0,0,0,.09);
-      transform: translateY(-2px);
-      border-color: var(--primary);
+      transform: translateY(-2px); border-color: var(--primary);
     }
     .ps-icon {
-      width: 48px; height: 48px;
-      border-radius: 12px;
+      width: 48px; height: 48px; border-radius: 12px;
       background: var(--primary-light);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; flex-shrink: 0;
     }
-    .ps-name  { font-weight: 700; font-size: .9rem; color: #0F172A; margin-bottom: 3px; }
-    .ps-desc  { font-size: .72rem; color: var(--text-muted); line-height: 1.45; }
+    .ps-name { font-weight: 700; font-size: .9rem; color: #0F172A; margin-bottom: 3px; }
+    .ps-desc { font-size: .72rem; color: var(--text-muted); line-height: 1.45; }
     .ps-arrow { color: var(--primary); font-weight: 700; flex-shrink: 0; font-size: 1rem; }
+
+    /* Banner info card */
+    .banner-explainer {
+      background: linear-gradient(135deg, #0F3460, #1a5276);
+      border-radius: 14px; padding: 1.25rem 1.4rem;
+      display: flex; align-items: flex-start; gap: 1rem;
+      margin-bottom: 1.5rem; color: #fff;
+    }
+    .banner-explainer-img {
+      width: 120px; flex-shrink: 0; border-radius: 8px; overflow: hidden;
+      background: rgba(255,255,255,.12);
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; gap: .3rem; padding: .75rem;
+      font-size: .65rem; color: rgba(255,255,255,.7); text-align: center;
+    }
+    .banner-explainer-preview {
+      width: 100%; height: 50px; background: rgba(255,255,255,.18);
+      border-radius: 5px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: .25rem;
+    }
+    .banner-explainer-body { flex: 1; }
+    .banner-explainer-title { font-weight: 700; font-size: .92rem; margin-bottom: .35rem; }
+    .banner-explainer-text { font-size: .78rem; line-height: 1.65; opacity: .88; }
+    .banner-explainer-link {
+      display: inline-flex; align-items: center; gap: .4rem;
+      margin-top: .65rem; background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25); border-radius: 8px;
+      padding: .4rem .8rem; font-size: .75rem; font-weight: 600;
+      color: #fff; text-decoration: none; transition: background .15s;
+    }
+    .banner-explainer-link:hover { background: rgba(255,255,255,.25); }
+    @media(max-width:600px){
+      .banner-explainer-img { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -57,22 +84,43 @@
         <button type="button" class="hamburger-btn">☰</button>
         <div>
           <div class="topbar-title">Pengaturan Halaman</div>
-          <div class="topbar-sub">Pilih halaman yang mau diedit kontennya</div>
+          <div class="topbar-sub">Klik halaman yang ingin diedit kontennya</div>
         </div>
       </div>
     </div>
     <div class="page-content">
       {{ if .flash }}<div class="flash flash-success" id="flashMsg">✓ Perubahan berhasil disimpan</div>{{ end }}
 
-      <div class="info-banner mb-4">
-        💡 Setiap kartu di bawah mewakili satu halaman di website portal. Di dalamnya kamu bisa mengubah
-        <strong>teks utama (konten panjang)</strong> maupun <strong>potongan konten kecil</strong> seperti
-        statistik, daftar program, info kontak, dan sebagainya — semuanya dalam satu form.
+      {{/* ── Penjelasan Banner ───────────────────────────────────────────── */}}
+      <div class="banner-explainer">
+        <div class="banner-explainer-img">
+          <div class="banner-explainer-preview">🖼️</div>
+          Slideshow di Beranda
+        </div>
+        <div class="banner-explainer-body">
+          <div class="banner-explainer-title">🖼️ Apa itu Banner?</div>
+          <div class="banner-explainer-text">
+            Banner adalah <strong>gambar slideshow besar</strong> yang tampil di bagian atas halaman Beranda,
+            tepat di bawah teks Hero. Gambar berganti otomatis tiap 5 detik dan bisa diklik untuk membuka
+            link tertentu. Berguna untuk menampilkan promo, pengumuman, atau foto kegiatan terbaru.
+            <br><br>
+            Pengaturan teks Hero (judul, subjudul, tombol) ada di kartu <strong>Beranda</strong> di bawah.
+            Untuk upload gambar banner, atur urutan, atau aktifkan/nonaktifkan — gunakan menu <strong>Banner</strong>.
+          </div>
+          <a href="/cms/banners" class="banner-explainer-link">→ Kelola Gambar Banner</a>
+        </div>
+      </div>
+
+      {{/* ── Kartu halaman ──────────────────────────────────────────────── */}}
+      <div class="info-banner mb-4" style="font-size:.79rem">
+        💡 Tiap kartu mewakili satu halaman di website. Klik untuk mengedit semua teks, daftar, dan konten
+        yang ditampilkan di halaman tersebut — tanpa perlu sentuh kode sama sekali.
       </div>
 
       <div class="ps-grid">
         {{ range $i, $p := .pages }}
-        <a href="/cms/page-settings/{{ $p.Slug }}/edit" class="ps-card" style="animation-delay:{{ mul $i 50 }}ms">
+        <a href="/cms/page-settings/{{ $p.Slug }}/edit" class="ps-card"
+           style="animation-delay:{{ mul $i 50 }}ms">
           <div class="ps-icon">{{ $p.Icon }}</div>
           <div style="flex:1;min-width:0">
             <div class="ps-name">{{ $p.Name }}</div>
@@ -87,10 +135,10 @@
 </div>
 <script>
 (function(){
-  var f = document.getElementById('flashMsg');
-  if (!f) return;
+  var f=document.getElementById('flashMsg');
+  if(!f) return;
   setTimeout(function(){ f.classList.add('flash-hide'); }, 3500);
-  f.addEventListener('click', function(){ f.classList.add('flash-hide'); });
+  f.addEventListener('click',function(){ f.classList.add('flash-hide'); });
 })();
 </script>
 </body>

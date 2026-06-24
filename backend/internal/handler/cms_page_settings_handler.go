@@ -11,27 +11,23 @@ import (
 	"github.com/yayasan/cms/internal/repo"
 )
 
-// pageDef mendefinisikan satu "halaman" di menu Pengaturan Halaman.
-// Sebuah halaman bisa punya konten panjang dari tabel pages (PageSlug tidak
-// kosong) dan/atau kumpulan Setting key yang spesifik untuk halaman itu
-// (SettingKeys). Form edit akan menampilkan keduanya sekaligus dalam satu form.
 type pageDef struct {
 	Name        string
-	Slug        string // slug untuk URL /cms/page-settings/:slug/edit
+	Slug        string
 	Icon        string
 	Description string
-	PageSlug    string   // slug di tabel domain.Page — kosong kalau tidak ada
-	SettingKeys []string // key dari tabel site_settings yang relevan
+	PageSlug    string
+	SettingKeys []string
 }
 
-// pageDefinitions adalah urutan & definisi halaman yang tampil di menu.
-// Perubahan urutan atau penambahan halaman baru cukup di sini.
+// pageDefinitions mendefinisikan urutan dan isi tiap kartu di menu
+// "Pengaturan Halaman". Sesuaikan dengan halaman yang ada di frontend React.
 var pageDefinitions = []pageDef{
 	{
 		Name:        "Beranda",
 		Slug:        "beranda",
 		Icon:        "🏠",
-		Description: "Hero, statistik, program, dampak, dan CTA halaman utama",
+		Description: "Hero, statistik, program unggulan, dampak nyata, dan CTA",
 		PageSlug:    "",
 		SettingKeys: []string{
 			"hero_badge_text",
@@ -51,28 +47,22 @@ var pageDefinitions = []pageDef{
 		Name:        "Tentang Kami",
 		Slug:        "tentang-kami",
 		Icon:        "👥",
-		Description: "Teks deskripsi organisasi, tim pengurus, nilai-nilai, dan linimasa",
+		Description: "Deskripsi organisasi, visi & misi, linimasa, nilai-nilai, dan tim pengurus",
 		PageSlug:    "about",
 		SettingKeys: []string{
-			"about_team_json",
-			"about_values_json",
+			"about_vision_text",
+			"about_mission_items",
 			"about_milestones_json",
+			"about_values_json",
+			"about_team_json",
 		},
-	},
-	{
-		Name:        "Visi & Misi",
-		Slug:        "visi-misi",
-		Icon:        "🔭",
-		Description: "Teks visi dan misi organisasi",
-		PageSlug:    "vision-mission",
-		SettingKeys: []string{},
 	},
 	{
 		Name:        "Kontak",
 		Slug:        "kontak",
 		Icon:        "📞",
-		Description: "Informasi kontak, jam operasional, alamat, dan akun sosial media",
-		PageSlug:    "contact",
+		Description: "Email, telepon, alamat, jam operasional, dan akun sosial media",
+		PageSlug:    "",
 		SettingKeys: []string{
 			"contact_email_1",
 			"contact_email_2",
@@ -90,7 +80,7 @@ var pageDefinitions = []pageDef{
 		Name:        "Halaman Relawan",
 		Slug:        "relawan",
 		Icon:        "🤝",
-		Description: "Konten di halaman daftar rekrutmen relawan",
+		Description: "Alasan bergabung menjadi relawan yang tampil di halaman daftar rekrutmen",
 		PageSlug:    "",
 		SettingKeys: []string{
 			"volunteer_why_join_json",
@@ -100,7 +90,7 @@ var pageDefinitions = []pageDef{
 		Name:        "Footer & Identitas Situs",
 		Slug:        "footer-identitas",
 		Icon:        "🏷️",
-		Description: "Nama situs, logo, deskripsi footer, daftar program, dan akun sosial media footer",
+		Description: "Nama situs, logo, deskripsi footer, daftar program, dan ikon sosial media",
 		PageSlug:    "",
 		SettingKeys: []string{
 			"site_name",
@@ -113,7 +103,6 @@ var pageDefinitions = []pageDef{
 	},
 }
 
-// findPageDef mencari definisi halaman berdasarkan slug URL.
 func findPageDef(slug string) *pageDef {
 	for i := range pageDefinitions {
 		if pageDefinitions[i].Slug == slug {
@@ -125,8 +114,6 @@ func findPageDef(slug string) *pageDef {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-// CMSPageSettingsHandler menangani menu Pengaturan Halaman yang menggabungkan
-// tabel pages (teks panjang) dan tabel site_settings (konten kecil dinamis).
 type CMSPageSettingsHandler struct {
 	pageRepo    *repo.PageRepo
 	settingRepo *repo.SettingRepo
@@ -136,7 +123,7 @@ func NewCMSPageSettingsHandler(pr *repo.PageRepo, sr *repo.SettingRepo) *CMSPage
 	return &CMSPageSettingsHandler{pr, sr}
 }
 
-// GET /cms/page-settings — daftar kartu halaman
+// GET /cms/page-settings
 func (h *CMSPageSettingsHandler) Index(c *gin.Context) {
 	c.HTML(http.StatusOK, "cms/page_settings_index.html", withUserCtx(c, gin.H{
 		"title":       "Pengaturan Halaman",
@@ -146,7 +133,7 @@ func (h *CMSPageSettingsHandler) Index(c *gin.Context) {
 	}))
 }
 
-// GET /cms/page-settings/:page/edit — form edit satu halaman
+// GET /cms/page-settings/:page/edit
 func (h *CMSPageSettingsHandler) Edit(c *gin.Context) {
 	def := findPageDef(c.Param("page"))
 	if def == nil {
@@ -154,7 +141,6 @@ func (h *CMSPageSettingsHandler) Edit(c *gin.Context) {
 		return
 	}
 
-	// Ambil konten teks panjang dari tabel pages (kalau ada)
 	var pageContent *domain.Page
 	if def.PageSlug != "" {
 		if p, err := h.pageRepo.FindBySlug(def.PageSlug); err == nil {
@@ -162,27 +148,23 @@ func (h *CMSPageSettingsHandler) Edit(c *gin.Context) {
 		}
 	}
 
-	// Ambil setting yang relevan untuk halaman ini
 	allSettings, _ := h.settingRepo.FindAll()
 	keySet := map[string]bool{}
 	for _, k := range def.SettingKeys {
 		keySet[k] = true
 	}
-	var fields []domain.SiteSetting
+
+	// Urutkan fields sesuai urutan SettingKeys supaya form rapi
+	fieldMap := map[string]domain.SiteSetting{}
 	for _, s := range allSettings {
 		if keySet[s.Key] {
-			fields = append(fields, s)
+			fieldMap[s.Key] = s
 		}
 	}
-
-	// Urutkan fields sesuai urutan SettingKeys (supaya form rapi)
-	ordered := make([]domain.SiteSetting, 0, len(fields))
+	ordered := make([]domain.SiteSetting, 0, len(def.SettingKeys))
 	for _, k := range def.SettingKeys {
-		for _, f := range fields {
-			if f.Key == k {
-				ordered = append(ordered, f)
-				break
-			}
+		if f, ok := fieldMap[k]; ok {
+			ordered = append(ordered, f)
 		}
 	}
 
@@ -190,13 +172,13 @@ func (h *CMSPageSettingsHandler) Edit(c *gin.Context) {
 		"title":        def.Name,
 		"active_menu":  "page_settings",
 		"page_def":     def,
-		"page_content": pageContent, // bisa nil kalau tidak ada PageSlug
+		"page_content": pageContent,
 		"fields":       ordered,
 		"flash":        c.Query("flash"),
 	}))
 }
 
-// POST /cms/page-settings/:page/save — simpan semua perubahan halaman ini
+// POST /cms/page-settings/:page/save
 func (h *CMSPageSettingsHandler) Save(c *gin.Context) {
 	def := findPageDef(c.Param("page"))
 	if def == nil {
@@ -217,7 +199,7 @@ func (h *CMSPageSettingsHandler) Save(c *gin.Context) {
 		}
 	}
 
-	// Simpan settings yang relevan untuk halaman ini
+	// Simpan settings yang relevan
 	if len(def.SettingKeys) > 0 {
 		allSettings, _ := h.settingRepo.FindAll()
 		keySet := map[string]bool{}
@@ -240,7 +222,6 @@ func (h *CMSPageSettingsHandler) Save(c *gin.Context) {
 						h.settingRepo.Update(s)
 					}
 				}
-				// kalau tidak upload file baru, nilai lama tetap dipertahankan
 			} else {
 				if v, ok := c.GetPostForm("setting[" + s.Key + "]"); ok {
 					s.Value = v

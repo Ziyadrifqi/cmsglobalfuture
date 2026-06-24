@@ -1,38 +1,32 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { portalApi } from '../api'
 import { useSettings } from '../hooks/useSettings'
 import { getText, getJSON } from '../lib/settings'
 
-interface SocialItem { platform: string; handle: string; icon: string }
+interface SocialItem { icon: string; platform: string; handle: string }
 
 const FALLBACK_SOCIALS: SocialItem[] = [
-  { platform: 'Instagram', handle: '@greenfuture.id',          icon: '🌿' },
-  { platform: 'YouTube',   handle: 'Green Future ID',          icon: '▶' },
-  { platform: 'Twitter/X', handle: '@GreenFutureID',           icon: '𝕏' },
-  { platform: 'LinkedIn',  handle: 'Green Future Indonesia',   icon: 'in' },
+  { icon: '🌿', platform: 'Instagram', handle: '@greenfuture.id' },
+  { icon: '▶',  platform: 'YouTube',   handle: 'Green Future ID' },
+  { icon: '𝕏',  platform: 'Twitter/X', handle: '@GreenFutureID' },
+  { icon: 'in', platform: 'LinkedIn',  handle: 'Green Future Indonesia' },
 ]
 
 export function ContactPage() {
   const [sending, setSending] = useState(false)
   const [sent, setSent]       = useState(false)
-
-  const { data: page } = useQuery({
-    queryKey: ['page', 'contact'],
-    queryFn: () => portalApi.page('contact'),
-  })
   const { data: settings } = useSettings()
 
-  const email1 = getText(settings, 'contact_email_1', 'info@greenfuture.id')
-  const email2 = getText(settings, 'contact_email_2', 'media@greenfuture.id')
-  const phone  = getText(settings, 'contact_phone', '(021) 456-7890')
+  // Semua info kontak dari settings — tidak bergantung pada Page "contact"
+  const email1    = getText(settings, 'contact_email_1', 'info@greenfuture.id')
+  const email2    = getText(settings, 'contact_email_2', 'media@greenfuture.id')
+  const phone     = getText(settings, 'contact_phone', '(021) 456-7890')
   const phoneNote = getText(settings, 'contact_phone_note', 'Senin–Jumat, 08.00–17.00')
-  const address1 = getText(settings, 'contact_address_1', 'Jl. Kemang Raya No. 45')
-  const address2 = getText(settings, 'contact_address_2', page?.Content || 'Jakarta Selatan 12730')
-  const hours1 = getText(settings, 'contact_hours_1', 'Senin – Jumat: 08.00 – 17.00')
-  const hours2 = getText(settings, 'contact_hours_2', 'Sabtu: 09.00 – 13.00 WIB')
-  const mapLabel = getText(settings, 'contact_map_label', 'Kemang, Jakarta Selatan')
-  const socials = getJSON<SocialItem[]>(settings, 'contact_social_json', FALLBACK_SOCIALS)
+  const address1  = getText(settings, 'contact_address_1', 'Jl. Kemang Raya No. 45')
+  const address2  = getText(settings, 'contact_address_2', 'Jakarta Selatan 12730')
+  const hours1    = getText(settings, 'contact_hours_1', 'Senin – Jumat: 08.00 – 17.00')
+  const hours2    = getText(settings, 'contact_hours_2', 'Sabtu: 09.00 – 13.00 WIB')
+  const mapLabel  = getText(settings, 'contact_map_label', 'Kemang, Jakarta Selatan')
+  const socials   = getJSON<SocialItem[]>(settings, 'contact_social_json', FALLBACK_SOCIALS)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -44,7 +38,7 @@ export function ContactPage() {
 
   const infoRows: [string, string, string, string][] = [
     ['📧', 'Email',           email1, email2],
-    ['📞', 'Telepon',         phone, phoneNote],
+    ['📞', 'Telepon',         phone,  phoneNote],
     ['📍', 'Alamat',          address1, address2],
     ['🕐', 'Jam Operasional', hours1, hours2],
   ]
@@ -93,7 +87,7 @@ export function ContactPage() {
             </div>
           </div>
 
-          {/* Map placeholder */}
+          {/* Peta placeholder */}
           <div className="bg-gradient-to-br from-teal-100 to-emerald-200 rounded-2xl h-40 flex flex-col items-center justify-center gap-2 text-teal-700">
             <span className="text-4xl">🗺️</span>
             <span className="text-sm font-semibold">{mapLabel}</span>
@@ -108,7 +102,7 @@ export function ContactPage() {
             <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
               <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center text-4xl animate-bounce">🌿</div>
               <p className="font-bold text-emerald-800 text-lg">Pesan Terkirim!</p>
-              <p className="text-sm text-slate-500">Tim kami akan membalas dalam 1–2 hari kerja. Terima kasih telah peduli pada lingkungan!</p>
+              <p className="text-sm text-slate-500">Tim kami akan membalas dalam 1–2 hari kerja.</p>
               <button onClick={() => setSent(false)} className="mt-3 px-5 py-2 rounded-xl border-2 border-teal-200 text-sm font-semibold text-teal-700 hover:bg-teal-50 transition-colors">
                 Kirim Pesan Lagi
               </button>
@@ -130,9 +124,9 @@ export function ContactPage() {
                 <select className={inputCls}>
                   <option value="">Pilih topik pesan</option>
                   <option>Pertanyaan Program</option>
-                  <option>Kemitraan & Sponsorship</option>
+                  <option>Kemitraan &amp; Sponsorship</option>
                   <option>Donasi</option>
-                  <option>Media & Pers</option>
+                  <option>Media &amp; Pers</option>
                   <option>Lainnya</option>
                 </select>
               </div>
@@ -141,7 +135,7 @@ export function ContactPage() {
                 <textarea required rows={6} placeholder="Tulis pesan Anda di sini..." className={`${inputCls} resize-none`}/>
               </div>
               <button type="submit" disabled={sending}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold text-[15px] hover:from-teal-700 hover:to-emerald-700 transition-all disabled:opacity-60 shadow-md shadow-teal-600/20 flex items-center justify-center gap-2">
+                className="w-full py-3 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 text-white font-bold text-[15px] hover:from-teal-700 hover:to-emerald-700 transition-all disabled:opacity-60 shadow-md flex items-center justify-center gap-2">
                 {sending
                   ? <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>Mengirim...</>
                   : 'Kirim Pesan 🌿'}

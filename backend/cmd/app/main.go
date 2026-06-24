@@ -86,7 +86,7 @@ func main() {
 		"templates/cms/user_form.html",
 		"templates/cms/profile.html",
 		"templates/cms/page_settings_index.html",
-		"templates/cms/page_settings_form.html",
+		"templates/cms/page_settings_form.html", // juga memuat blockPageContent & blockSettings
 	)
 
 	// ── Repo ──────────────────────────────────────────────────────────────────

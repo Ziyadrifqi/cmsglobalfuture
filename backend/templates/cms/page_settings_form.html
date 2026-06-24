@@ -6,32 +6,32 @@
   <title>{{ .title }} — Yayasan CMS</title>
   {{template "cms_styles" .}}
   <style>
-    .section-divider {
-      display: flex; align-items: center; gap: .75rem;
-      margin: 1.75rem 0 1rem;
-    }
-    .section-divider-line { flex: 1; height: 1px; background: var(--border); }
-    .section-divider-label {
-      font-size: .68rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--text-muted); white-space: nowrap;
-    }
-    .json-hint {
-      background: #FFFBEB; border: 1px solid #FDE68A;
-      border-radius: 8px; padding: .6rem .85rem;
-      font-size: .72rem; color: #B45309; line-height: 1.5; margin-top: .35rem;
-    }
-    .page-tabs {
-      display: flex; gap: 2px; background: #F1F5F9;
-      padding: 4px; border-radius: 10px; width: fit-content; margin-bottom: 1.25rem;
-    }
-    .page-tab-btn {
-      padding: .45rem 1rem; border-radius: 7px; font-size: .8rem;
-      font-weight: 600; color: var(--text-muted); cursor: pointer;
-      border: none; background: transparent; transition: background .15s, color .15s;
-    }
-    .page-tab-btn.active { background: #fff; color: #0F172A; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-    .page-tab-panel { display: none; }
-    .page-tab-panel.active { display: block; animation: fadeUp .25s ease; }
+    .sec-divider{display:flex;align-items:center;gap:.75rem;margin:1.75rem 0 1rem}
+    .sec-divider-line{flex:1;height:1px;background:var(--border)}
+    .sec-divider-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);white-space:nowrap}
+    .ps-tabs{display:flex;gap:2px;background:#F1F5F9;padding:4px;border-radius:10px;width:fit-content;margin-bottom:1.25rem}
+    .ps-tab-btn{padding:.45rem 1rem;border-radius:7px;font-size:.8rem;font-weight:600;color:var(--text-muted);cursor:pointer;border:none;background:transparent;transition:background .15s,color .15s}
+    .ps-tab-btn.active{background:#fff;color:#0F172A;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+    .ps-tab-panel{display:none}
+    .ps-tab-panel.active{display:block;animation:fadeUp .25s ease}
+    /* Repeater */
+    .rep-row{display:flex;gap:.6rem;align-items:flex-start;background:#F8FAFC;border:1.5px solid var(--border);border-radius:10px;padding:.85rem;margin-bottom:.5rem}
+    .rep-fields{flex:1;display:flex;flex-direction:column;gap:.5rem}
+    .rep-field-wrap{display:flex;flex-direction:column;gap:3px}
+    .rep-field-label{font-size:.7rem;font-weight:600;color:#475569}
+    .rep-input{width:100%;padding:.5rem .65rem;border:1.5px solid var(--border);border-radius:7px;font-size:.83rem;font-family:inherit;outline:none;background:#fff;transition:border-color .15s}
+    .rep-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+    .rep-del{flex-shrink:0;width:30px;height:30px;border-radius:7px;border:1px solid #FECACA;background:#FEF2F2;color:#EF4444;cursor:pointer;font-size:.8rem;margin-top:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .rep-del:hover{background:#FECACA}
+    .rep-add{margin-top:.5rem}
+    /* String array textarea */
+    .str-array-ta{width:100%;padding:.6rem .85rem;border:1.5px solid var(--border);border-radius:8px;font-size:.85rem;font-family:inherit;outline:none;background:#FAFAFA;transition:border-color .2s,box-shadow .2s,background .2s;resize:vertical}
+    .str-array-ta:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff}
+    /* Banner info */
+    .banner-info{background:linear-gradient(135deg,#1E3A5F,#2563EB);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:flex-start;gap:.9rem;color:#fff;margin-bottom:1.25rem}
+    .banner-info-icon{font-size:1.75rem;flex-shrink:0;margin-top:2px}
+    .banner-info-title{font-weight:700;font-size:.88rem;margin-bottom:.25rem}
+    .banner-info-desc{font-size:.78rem;line-height:1.6;opacity:.88}
   </style>
 </head>
 <body>
@@ -51,202 +51,370 @@
         <button type="button" class="hamburger-btn">☰</button>
         <div>
           <div class="topbar-title">{{ .page_def.Icon }} {{ .title }}</div>
-          <div class="topbar-sub">
-            <a href="/cms/page-settings" style="color:var(--primary);text-decoration:none">← Kembali ke Pengaturan Halaman</a>
-          </div>
+          <div class="topbar-sub"><a href="/cms/page-settings" style="color:var(--primary);text-decoration:none">← Kembali ke Pengaturan Halaman</a></div>
         </div>
       </div>
     </div>
-
-    <div class="page-content" style="max-width:840px">
+    <div class="page-content" style="max-width:860px">
 
       {{ if .flash }}
-      <div class="flash flash-success" id="flashMsg">
-        ✓ Konten halaman <strong>{{ .title }}</strong> berhasil disimpan
+      <div class="flash flash-success" id="flashMsg">✓ Halaman <strong>{{ .title }}</strong> berhasil disimpan</div>
+      {{ end }}
+
+      {{ if eq .page_def.Slug "beranda" }}
+      <div class="banner-info">
+        <div class="banner-info-icon">🖼️</div>
+        <div>
+          <div class="banner-info-title">Tentang Banner / Slideshow</div>
+          <div class="banner-info-desc">
+            Banner adalah <strong>gambar slideshow besar</strong> yang muncul di bawah area Hero di halaman Beranda —
+            berganti otomatis tiap 5 detik dan bisa diklik ke link tertentu.
+            Banner dikelola di menu <strong>Banner</strong> di sidebar (upload gambar, atur urutan, aktif/nonaktif).
+            Pengaturan teks dan tombol Hero ada di form ini.
+          </div>
+        </div>
       </div>
       {{ end }}
 
-      <form method="POST" action="/cms/page-settings/{{ .page_def.Slug }}/save" enctype="multipart/form-data">
+      <form id="mainForm" method="POST" action="/cms/page-settings/{{ .page_def.Slug }}/save" enctype="multipart/form-data">
 
         {{ if and .page_content .fields }}
-        {{/* ── Halaman punya KEDUANYA: konten panjang + settings → tampilkan tab ── */}}
-
-        <div class="page-tabs">
-          <button type="button" class="page-tab-btn active" onclick="switchTab('konten',this)">📝 Konten Utama</button>
-          <button type="button" class="page-tab-btn" onclick="switchTab('setting',this)">⚙ Pengaturan Lainnya</button>
+        {{/* Halaman punya konten panjang (Page) DAN settings → tampilkan tab */}}
+        <div class="ps-tabs">
+          <button type="button" class="ps-tab-btn active" onclick="switchTab('konten',this)">📝 Teks Utama</button>
+          <button type="button" class="ps-tab-btn" onclick="switchTab('setting',this)">⚙ Konten Lainnya</button>
         </div>
 
-        {{/* TAB 1: Konten panjang (Page) */}}
-        <div class="page-tab-panel active" id="tab-konten">
-          <div class="form-card fade-in">
-            <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:1rem">
-              📝 Teks Utama Halaman
-              <span style="font-weight:400;color:var(--text-muted);margin-left:.5rem">— konten yang langsung ditampilkan di halaman ini</span>
-            </div>
-            <div class="form-grid">
-              <div class="form-group full">
-                <label class="field-label">Judul Halaman</label>
-                <input type="text" name="page_title" value="{{ .page_content.Title }}"/>
-              </div>
-              <div class="form-group full">
-                <label class="field-label">Konten</label>
-                <div class="editor-toolbar">
-                  <button type="button" onclick="applyFmt('**','**')">B</button>
-                  <button type="button" onclick="applyFmt('_','_')">I</button>
-                  <button type="button" onclick="applyFmt('## ','')">H2</button>
-                  <button type="button" onclick="applyFmt('### ','')">H3</button>
-                  <button type="button" onclick="applyFmt('- ','')">• List</button>
-                  <button type="button" onclick="applyFmt('> ','')">❝ Quote</button>
-                </div>
-                <textarea id="pageContentArea" name="page_content" rows="16" class="code-area">{{ .page_content.Content }}</textarea>
-                <span class="field-hint">Mendukung Markdown: **bold**, _italic_, ## heading, - list</span>
-              </div>
-            </div>
-            <div class="section-divider">
-              <div class="section-divider-line"></div>
-              <div class="section-divider-label">SEO &amp; Meta (opsional)</div>
-              <div class="section-divider-line"></div>
-            </div>
-            <div class="form-grid">
-              <div class="form-group">
-                <label class="field-label">Meta Title <span style="font-weight:400;color:#94A3B8">(maks 60 karakter)</span></label>
-                <input type="text" name="page_meta_title" maxlength="60" value="{{ .page_content.MetaTitle }}" placeholder="Judul untuk Google..."/>
-              </div>
-              <div class="form-group">
-                <label class="field-label">Meta Description <span style="font-weight:400;color:#94A3B8">(maks 160 karakter)</span></label>
-                <textarea name="page_meta_description" rows="2" maxlength="160" placeholder="Deskripsi untuk Google...">{{ .page_content.MetaDescription }}</textarea>
-              </div>
-            </div>
-          </div>
+        <div class="ps-tab-panel active" id="tab-konten">
+          {{ template "blockPageContent" . }}
         </div>
-
-        {{/* TAB 2: Settings fields */}}
-        <div class="page-tab-panel" id="tab-setting">
-          <div class="form-card fade-in">
-            <div class="form-grid">
-              {{ range $s := .fields }}
-              <div class="form-group full">
-                <label class="field-label">{{ $s.Label }}</label>
-                {{ if eq $s.Type "image" }}
-                  {{ if $s.Value }}
-                  <img src="{{ $s.Value }}" style="height:64px;border-radius:8px;object-fit:contain;border:1px solid var(--border);margin-bottom:.45rem;display:block;background:#F8FAFC"/>
-                  {{ end }}
-                  <input type="file" name="image[{{ $s.Key }}]" accept="image/*"/>
-                  <span class="field-hint">Upload baru untuk mengganti. Biarkan kosong jika tidak ingin mengubah.</span>
-                {{ else if eq $s.Type "json" }}
-                  <textarea name="setting[{{ $s.Key }}]" rows="5" class="code-area">{{ $s.Value }}</textarea>
-                  <div class="json-hint">⚠ Field ini berformat JSON array. Pastikan format tetap valid sebelum disimpan.</div>
-                {{ else }}
-                  <textarea name="setting[{{ $s.Key }}]" rows="2">{{ $s.Value }}</textarea>
-                {{ end }}
-              </div>
-              {{ end }}
-            </div>
-          </div>
+        <div class="ps-tab-panel" id="tab-setting">
+          {{ template "blockSettings" . }}
         </div>
 
         {{ else if .page_content }}
-        {{/* ── Hanya punya konten panjang (mis. Visi & Misi) ── */}}
-        <div class="form-card fade-in">
-          <div class="form-grid">
-            <div class="form-group full">
-              <label class="field-label">Judul Halaman</label>
-              <input type="text" name="page_title" value="{{ .page_content.Title }}"/>
-            </div>
-            <div class="form-group full">
-              <label class="field-label">Konten</label>
-              <div class="editor-toolbar">
-                <button type="button" onclick="applyFmt('**','**')">B</button>
-                <button type="button" onclick="applyFmt('_','_')">I</button>
-                <button type="button" onclick="applyFmt('## ','')">H2</button>
-                <button type="button" onclick="applyFmt('### ','')">H3</button>
-                <button type="button" onclick="applyFmt('- ','')">• List</button>
-                <button type="button" onclick="applyFmt('> ','')">❝ Quote</button>
-              </div>
-              <textarea id="pageContentArea" name="page_content" rows="18" class="code-area">{{ .page_content.Content }}</textarea>
-              <span class="field-hint">Mendukung Markdown: **bold**, _italic_, ## heading, - list</span>
-            </div>
-          </div>
-          <div class="section-divider">
-            <div class="section-divider-line"></div>
-            <div class="section-divider-label">SEO &amp; Meta (opsional)</div>
-            <div class="section-divider-line"></div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="field-label">Meta Title <span style="font-weight:400;color:#94A3B8">(maks 60 karakter)</span></label>
-              <input type="text" name="page_meta_title" maxlength="60" value="{{ .page_content.MetaTitle }}" placeholder="Judul untuk Google..."/>
-            </div>
-            <div class="form-group">
-              <label class="field-label">Meta Description <span style="font-weight:400;color:#94A3B8">(maks 160 karakter)</span></label>
-              <textarea name="page_meta_description" rows="2" maxlength="160" placeholder="Deskripsi untuk Google...">{{ .page_content.MetaDescription }}</textarea>
-            </div>
-          </div>
-        </div>
-
+          {{ template "blockPageContent" . }}
         {{ else if .fields }}
-        {{/* ── Hanya punya settings (mis. Beranda, Relawan, Footer) ── */}}
-        <div class="form-card fade-in">
-          <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:1rem">
-            ⚙ Konten &amp; Pengaturan
-            <span style="font-weight:400;color:var(--text-muted);margin-left:.5rem">— teks, angka, dan daftar yang tampil di halaman ini</span>
-          </div>
-          <div class="form-grid">
-            {{ range $s := .fields }}
-            <div class="form-group full">
-              <label class="field-label">{{ $s.Label }}</label>
-              {{ if eq $s.Type "image" }}
-                {{ if $s.Value }}
-                <img src="{{ $s.Value }}" style="height:64px;border-radius:8px;object-fit:contain;border:1px solid var(--border);margin-bottom:.45rem;display:block;background:#F8FAFC"/>
-                {{ end }}
-                <input type="file" name="image[{{ $s.Key }}]" accept="image/*"/>
-                <span class="field-hint">Upload baru untuk mengganti. Biarkan kosong jika tidak ingin mengubah.</span>
-              {{ else if eq $s.Type "json" }}
-                <textarea name="setting[{{ $s.Key }}]" rows="5" class="code-area">{{ $s.Value }}</textarea>
-                <div class="json-hint">⚠ Field ini berformat JSON array. Pastikan format tetap valid sebelum disimpan.</div>
-              {{ else }}
-                <textarea name="setting[{{ $s.Key }}]" rows="2">{{ $s.Value }}</textarea>
-              {{ end }}
-            </div>
-            {{ end }}
-          </div>
-        </div>
+          {{ template "blockSettings" . }}
         {{ end }}
 
         <div class="flex gap-2" style="margin-top:1.5rem">
           <a href="/cms/page-settings" class="btn btn-ghost">Batal</a>
           <button type="submit" class="btn btn-primary">💾 Simpan Perubahan</button>
         </div>
-
       </form>
     </div>
   </main>
 </div>
 
 <script>
-function switchTab(name, btn) {
-  document.querySelectorAll('.page-tab-panel').forEach(function(p){ p.classList.remove('active'); });
-  document.querySelectorAll('.page-tab-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.getElementById('tab-' + name).classList.add('active');
+/* ── Tab switcher ─────────────────────────────────────────────────────────── */
+function switchTab(name,btn){
+  document.querySelectorAll('.ps-tab-panel').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.ps-tab-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById('tab-'+name).classList.add('active');
   btn.classList.add('active');
 }
 
-function applyFmt(b, a) {
-  var ta = document.getElementById('pageContentArea');
-  if (!ta) return;
-  var s = ta.selectionStart, e = ta.selectionEnd;
-  ta.value = ta.value.slice(0, s) + b + ta.value.slice(s, e) + a + ta.value.slice(e);
-  ta.focus();
-  ta.setSelectionRange(s + b.length, e + b.length);
+/* ── Toolbar markdown ─────────────────────────────────────────────────────── */
+function applyFmt(b,a){
+  var ta=document.getElementById('pageContentArea');
+  if(!ta)return;
+  var s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+b+ta.value.slice(s,e)+a+ta.value.slice(e);
+  ta.focus();ta.setSelectionRange(s+b.length,e+b.length);
 }
 
-(function(){
-  var f = document.getElementById('flashMsg');
-  if (!f) return;
-  setTimeout(function(){ f.classList.add('flash-hide'); }, 4000);
-  f.addEventListener('click', function(){ f.classList.add('flash-hide'); });
-})();
+/* ── Repeater schemas ─────────────────────────────────────────────────────── */
+// Mendefinisikan field apa yang ada di setiap JSON list.
+// key = setting key, fields = daftar kolom per item.
+var SCHEMAS = {
+  'home_stats_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌿'},
+    {k:'value', l:'Angka / Nilai', p:'12K+'},
+    {k:'label', l:'Keterangan', p:'Relawan Aktif'}
+  ],
+  'home_programs_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌊'},
+    {k:'title', l:'Nama Program', p:'Bersih Pantai & Sungai'},
+    {k:'desc', l:'Deskripsi Singkat', p:'Aksi bersih rutin...', ml:true}
+  ],
+  'home_impacts_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌳'},
+    {k:'num', l:'Angka', p:'850.000'},
+    {k:'unit', l:'Satuan', p:'Pohon'},
+    {k:'desc', l:'Keterangan Singkat', p:'ditanam sejak 2015'}
+  ],
+  'about_milestones_json': [
+    {k:'year', l:'Tahun', p:'2015'},
+    {k:'label', l:'Keterangan Pencapaian', p:'Didirikan di Jakarta...', ml:true}
+  ],
+  'about_values_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌿'},
+    {k:'title', l:'Nama Nilai', p:'Kepedulian'},
+    {k:'desc', l:'Deskripsi', p:'Kami percaya...', ml:true}
+  ],
+  'about_team_json': [
+    {k:'icon', l:'Foto / Emoji', p:'👨‍💼'},
+    {k:'name', l:'Nama Lengkap', p:'Rizal Anwar, M.Env'},
+    {k:'role', l:'Jabatan', p:'Ketua Umum'}
+  ],
+  'footer_social_json': [
+    {k:'icon', l:'Ikon', p:'𝕏'},
+    {k:'label', l:'Nama Platform', p:'Twitter/X'},
+    {k:'link', l:'URL Profil', p:'https://...'}
+  ],
+  'contact_social_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌿'},
+    {k:'platform', l:'Platform', p:'Instagram'},
+    {k:'handle', l:'Username', p:'@greenfuture.id'}
+  ],
+  'volunteer_why_join_json': [
+    {k:'icon', l:'Ikon / Emoji', p:'🌿'},
+    {k:'title', l:'Judul Poin', p:'Dampak Nyata'},
+    {k:'desc', l:'Deskripsi', p:'Setiap aksi Anda...', ml:true}
+  ]
+};
+
+// Field yang isinya daftar teks biasa (satu baris = satu item)
+var STR_KEYS = {'about_mission_items':1,'footer_programs_json':1};
+
+/* ── Inisialisasi semua field JSON ─────────────────────────────────────────── */
+function initAll(){
+  document.querySelectorAll('.json-field-wrap').forEach(function(wrap){
+    var key=wrap.dataset.key;
+    var raw=wrap.dataset.value||'[]';
+    var items=[];
+    try{items=JSON.parse(raw);}catch(e){}
+
+    if(STR_KEYS[key]){
+      initStringArray(wrap,key,items);
+    } else if(SCHEMAS[key]){
+      initRepeater(wrap,key,items,SCHEMAS[key]);
+    } else {
+      // fallback: textarea JSON mentah (tidak ada di halaman ini normalnya)
+      var ta=document.createElement('textarea');
+      ta.name='setting['+key+']';
+      ta.rows=4;
+      ta.className='code-area';
+      ta.style.width='100%';
+      ta.value=raw;
+      wrap.appendChild(ta);
+    }
+  });
+}
+
+/* ── String array: textarea satu baris per item ─────────────────────────── */
+function initStringArray(wrap,key,items){
+  var ta=document.createElement('textarea');
+  ta.className='str-array-ta';
+  ta.dataset.key=key;
+  ta.rows=Math.max(4,items.length+1);
+  ta.placeholder='Tulis satu item per baris\nContoh:\nItem pertama\nItem kedua';
+  ta.value=items.join('\n');
+  wrap.appendChild(ta);
+
+  var hint=document.createElement('span');
+  hint.className='field-hint';
+  hint.textContent='Tulis satu item per baris. Baris kosong akan diabaikan.';
+  wrap.appendChild(hint);
+
+  // Hidden input yang dikirim ke server
+  var hidden=document.createElement('input');
+  hidden.type='hidden';
+  hidden.name='setting['+key+']';
+  hidden.id='json_h_'+key;
+  wrap.appendChild(hidden);
+}
+
+/* ── Object array: repeater dengan baris per item ─────────────────────────── */
+function initRepeater(wrap,key,items,fields){
+  var rowsDiv=document.createElement('div');
+  rowsDiv.className='rep-rows';
+  rowsDiv.id='rows_'+key;
+  wrap.appendChild(rowsDiv);
+
+  items.forEach(function(item){appendRow(rowsDiv,fields,item);});
+  if(items.length===0) appendRow(rowsDiv,fields,null);
+
+  var addBtn=document.createElement('button');
+  addBtn.type='button';
+  addBtn.className='btn btn-sm btn-ghost rep-add';
+  addBtn.textContent='+ Tambah Item';
+  addBtn.addEventListener('click',function(){
+    appendRow(rowsDiv,fields,null);
+    rowsDiv.lastElementChild.querySelector('.rep-input').focus();
+  });
+  wrap.appendChild(addBtn);
+
+  var hidden=document.createElement('input');
+  hidden.type='hidden';
+  hidden.name='setting['+key+']';
+  hidden.id='json_h_'+key;
+  wrap.appendChild(hidden);
+}
+
+function appendRow(rowsDiv,fields,data){
+  var row=document.createElement('div');
+  row.className='rep-row';
+
+  var fieldsDiv=document.createElement('div');
+  fieldsDiv.className='rep-fields';
+
+  fields.forEach(function(f){
+    var fw=document.createElement('div');
+    fw.className='rep-field-wrap';
+
+    var lbl=document.createElement('label');
+    lbl.className='rep-field-label';
+    lbl.textContent=f.l;
+    fw.appendChild(lbl);
+
+    var inp;
+    if(f.ml){
+      inp=document.createElement('textarea');
+      inp.rows=2;
+      inp.style.resize='none';
+    } else {
+      inp=document.createElement('input');
+      inp.type='text';
+    }
+    inp.className='rep-input';
+    inp.dataset.field=f.k;
+    inp.placeholder=f.p||'';
+    inp.value=(data&&data[f.k]!==undefined)?data[f.k]:'';
+    fw.appendChild(inp);
+    fieldsDiv.appendChild(fw);
+  });
+
+  row.appendChild(fieldsDiv);
+
+  var del=document.createElement('button');
+  del.type='button';
+  del.className='rep-del';
+  del.title='Hapus item ini';
+  del.textContent='✕';
+  del.addEventListener('click',function(){
+    if(rowsDiv.children.length<=1){return;}
+    row.remove();
+  });
+  row.appendChild(del);
+  rowsDiv.appendChild(row);
+}
+
+/* ── Serialisasi sebelum submit ─────────────────────────────────────────── */
+function serializeAll(){
+  // String arrays
+  document.querySelectorAll('.str-array-ta').forEach(function(ta){
+    var key=ta.dataset.key;
+    var lines=ta.value.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+    var hidden=document.getElementById('json_h_'+key);
+    if(hidden) hidden.value=JSON.stringify(lines);
+  });
+
+  // Object arrays
+  document.querySelectorAll('.json-field-wrap').forEach(function(wrap){
+    var key=wrap.dataset.key;
+    if(STR_KEYS[key]||!SCHEMAS[key]) return;
+    var fields=SCHEMAS[key];
+    var rows=wrap.querySelectorAll('.rep-row');
+    var items=[];
+    rows.forEach(function(row){
+      var item={};
+      fields.forEach(function(f){
+        var inp=row.querySelector('[data-field="'+f.k+'"]');
+        if(inp) item[f.k]=inp.value;
+      });
+      // Hanya masukkan item kalau ada field yang tidak kosong
+      var hasVal=fields.some(function(f){return item[f.k]&&item[f.k].trim();});
+      if(hasVal) items.push(item);
+    });
+    var hidden=document.getElementById('json_h_'+key);
+    if(hidden) hidden.value=JSON.stringify(items);
+  });
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  initAll();
+  var form=document.getElementById('mainForm');
+  if(form) form.addEventListener('submit',serializeAll);
+
+  // Flash auto-hide
+  var f=document.getElementById('flashMsg');
+  if(f){
+    setTimeout(function(){f.classList.add('flash-hide');},4000);
+    f.addEventListener('click',function(){f.classList.add('flash-hide');});
+  }
+});
 </script>
 </body>
 </html>
+{{end}}
+
+{{define "blockPageContent"}}
+<div class="form-card fade-in">
+  <div style="font-size:.8rem;font-weight:700;color:var(--primary);margin-bottom:1rem">
+    📝 Teks Utama Halaman
+  </div>
+  <div class="form-grid">
+    <div class="form-group full">
+      <label class="field-label">Judul Halaman</label>
+      <input type="text" name="page_title" value="{{ .page_content.Title }}"/>
+    </div>
+    <div class="form-group full">
+      <label class="field-label">Konten / Deskripsi</label>
+      <div class="editor-toolbar">
+        <button type="button" onclick="applyFmt('**','**')">B</button>
+        <button type="button" onclick="applyFmt('_','_')">I</button>
+        <button type="button" onclick="applyFmt('## ','')">H2</button>
+        <button type="button" onclick="applyFmt('### ','')">H3</button>
+        <button type="button" onclick="applyFmt('- ','')">• List</button>
+        <button type="button" onclick="applyFmt('> ','')">❝ Quote</button>
+      </div>
+      <textarea id="pageContentArea" name="page_content" rows="16" class="code-area">{{ .page_content.Content }}</textarea>
+      <span class="field-hint">Mendukung Markdown: **bold**, _italic_, ## heading, - list</span>
+    </div>
+  </div>
+  <div class="sec-divider">
+    <div class="sec-divider-line"></div>
+    <div class="sec-divider-label">SEO &amp; Meta (opsional)</div>
+    <div class="sec-divider-line"></div>
+  </div>
+  <div class="form-grid">
+    <div class="form-group">
+      <label class="field-label">Meta Title <span style="font-weight:400;color:#94A3B8">(maks 60 karakter)</span></label>
+      <input type="text" name="page_meta_title" maxlength="60" value="{{ .page_content.MetaTitle }}" placeholder="Judul untuk Google..."/>
+    </div>
+    <div class="form-group">
+      <label class="field-label">Meta Description <span style="font-weight:400;color:#94A3B8">(maks 160 karakter)</span></label>
+      <textarea name="page_meta_description" rows="2" maxlength="160" placeholder="Deskripsi untuk Google...">{{ .page_content.MetaDescription }}</textarea>
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "blockSettings"}}
+<div class="form-card fade-in">
+  {{ range $s := .fields }}
+  <div class="form-group full" style="margin-bottom:1.25rem">
+    <label class="field-label" style="font-size:.82rem;margin-bottom:.4rem;display:block">{{ $s.Label }}</label>
+
+    {{ if eq $s.Type "image" }}
+      {{ if $s.Value }}
+      <img src="{{ $s.Value }}" style="height:64px;border-radius:8px;object-fit:contain;border:1px solid var(--border);margin-bottom:.45rem;display:block;background:#F8FAFC"/>
+      {{ end }}
+      <input type="file" name="image[{{ $s.Key }}]" accept="image/*"/>
+      <span class="field-hint">Upload baru untuk mengganti. Biarkan kosong jika tidak ingin mengubah gambar.</span>
+
+    {{ else if eq $s.Type "json" }}
+      {{/* JSON field — dirender oleh JavaScript sebagai repeater atau textarea per baris */}}
+      <div class="json-field-wrap" data-key="{{ $s.Key }}" data-value="{{ $s.Value }}"></div>
+
+    {{ else }}
+      {{/* Field teks biasa */}}
+      <textarea name="setting[{{ $s.Key }}]" rows="2" style="width:100%">{{ $s.Value }}</textarea>
+    {{ end }}
+  </div>
+  {{ end }}
+</div>
 {{end}}
