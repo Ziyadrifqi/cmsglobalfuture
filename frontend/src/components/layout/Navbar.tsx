@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useSettings } from '../../hooks/useSettings'
 import { getText } from '../../lib/settings'
+import { imgUrl } from '../../lib/imageUrl'
 
 const links = [
   { to: '/',         label: 'Beranda' },
@@ -38,7 +39,7 @@ export function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5">
           {logoImage ? (
-            <img src={logoImage} alt={siteName} className="w-9 h-9 rounded-xl object-cover shadow-sm" />
+            <img src={imgUrl(logoImage)} alt={siteName} className="w-9 h-9 rounded-xl object-cover shadow-sm" />
           ) : (
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-600 to-teal-900 flex items-center justify-center text-lg shadow-sm">
               🌿
