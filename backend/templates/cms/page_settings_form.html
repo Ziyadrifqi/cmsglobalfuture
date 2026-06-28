@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ .title }} — Yayasan CMS</title>
+  <title>{{ .title }} — Global Future CMS</title>
   {{template "cms_styles" .}}
   <style>
     .sec-divider{display:flex;align-items:center;gap:.75rem;margin:1.75rem 0 1rem}
@@ -40,7 +40,7 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">🏛️</div>
-      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+      <div><div class="sidebar-logo-text">Global Future CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
     </div>
     <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
     {{template "sidebar_footer" .}}
@@ -338,13 +338,7 @@ document.addEventListener('DOMContentLoaded',function(){
   initAll();
   var form=document.getElementById('mainForm');
   if(form) form.addEventListener('submit',serializeAll);
-
-  // Flash auto-hide
-  var f=document.getElementById('flashMsg');
-  if(f){
-    setTimeout(function(){f.classList.add('flash-hide');},4000);
-    f.addEventListener('click',function(){f.classList.add('flash-hide');});
-  }
+  // Flash auto-hide dihandle sidebar_toggle.html secara universal
 });
 </script>
 </body>

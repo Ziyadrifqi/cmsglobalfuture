@@ -23,19 +23,15 @@ func NewCMSBannerHandler(br *repo.BannerRepo) *CMSBannerHandler {
 func (h *CMSBannerHandler) Index(c *gin.Context) {
 	banners, _ := h.bannerRepo.FindAll()
 	c.HTML(http.StatusOK, "cms/banner_list.html", withUserCtx(c, gin.H{
-		"title":       "Manajemen Banner",
-		"active_menu": "banners",
-		"banners":     banners,
-		"flash":       c.Query("flash"),
+		"title": "Manajemen Banner", "active_menu": "banners",
+		"banners": banners, "flash": c.Query("flash"),
 	}))
 }
 
 // GET /cms/banners/create
 func (h *CMSBannerHandler) CreatePage(c *gin.Context) {
 	c.HTML(http.StatusOK, "cms/banner_form.html", withUserCtx(c, gin.H{
-		"title":       "Tambah Banner",
-		"active_menu": "banners",
-		"is_edit":     false,
+		"title": "Tambah Banner", "active_menu": "banners", "is_edit": false,
 	}))
 }
 
@@ -56,20 +52,16 @@ func (h *CMSBannerHandler) Create(c *gin.Context) {
 
 	if imagePath == "" {
 		c.HTML(http.StatusOK, "cms/banner_form.html", withUserCtx(c, gin.H{
-			"title":       "Tambah Banner",
-			"active_menu": "banners",
-			"is_edit":     false,
-			"error":       "Gambar banner wajib diupload",
+			"title": "Tambah Banner", "active_menu": "banners",
+			"is_edit": false, "error": "Gambar banner wajib diupload",
 		}))
 		return
 	}
 
 	h.bannerRepo.Create(&domain.Banner{
-		Title:     c.PostForm("title"),
-		ImagePath: imagePath,
-		LinkURL:   c.PostForm("link_url"),
-		OrderNum:  order,
-		IsActive:  c.PostForm("is_active") == "1",
+		Title: c.PostForm("title"), ImagePath: imagePath,
+		LinkURL: c.PostForm("link_url"), OrderNum: order,
+		IsActive: c.PostForm("is_active") == "1",
 	})
 	c.Redirect(http.StatusFound, "/cms/banners?flash=created")
 }
@@ -83,10 +75,8 @@ func (h *CMSBannerHandler) EditPage(c *gin.Context) {
 		return
 	}
 	c.HTML(http.StatusOK, "cms/banner_form.html", withUserCtx(c, gin.H{
-		"title":       "Edit Banner",
-		"active_menu": "banners",
-		"is_edit":     true,
-		"banner":      banner,
+		"title": "Edit Banner", "active_menu": "banners",
+		"is_edit": true, "banner": banner,
 	}))
 }
 
@@ -107,11 +97,13 @@ func (h *CMSBannerHandler) Update(c *gin.Context) {
 
 	file, err := c.FormFile("image")
 	if err == nil {
+		oldPath := banner.ImagePath // simpan path lama sebelum diganti
 		ext := filepath.Ext(file.Filename)
 		filename := strconv.FormatInt(time.Now().UnixNano(), 10) + ext
 		dst := "static/uploads/banners/" + filename
 		if c.SaveUploadedFile(file, dst) == nil {
 			banner.ImagePath = "/static/uploads/banners/" + filename
+			removeFile(oldPath) // hapus gambar lama dari disk
 		}
 	}
 
@@ -135,6 +127,13 @@ func (h *CMSBannerHandler) Toggle(c *gin.Context) {
 // POST /cms/banners/:id/delete
 func (h *CMSBannerHandler) Delete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	banner, err := h.bannerRepo.FindByID(uint(id))
+	if err != nil {
+		c.Redirect(http.StatusFound, "/cms/banners?flash=deleted")
+		return
+	}
+	imagePath := banner.ImagePath // simpan sebelum hapus dari DB
 	h.bannerRepo.Delete(uint(id))
+	removeFile(imagePath) // hapus file dari disk
 	c.Redirect(http.StatusFound, "/cms/banners?flash=deleted")
 }

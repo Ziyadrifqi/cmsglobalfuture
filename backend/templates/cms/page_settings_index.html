@@ -3,7 +3,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ .title }} — Yayasan CMS</title>
+  <title>{{ .title }} — Global Future CMS</title>
   {{template "cms_styles" .}}
   <style>
     .ps-grid {
@@ -73,7 +73,7 @@
   <aside class="sidebar">
     <div class="sidebar-logo">
       <div class="sidebar-logo-icon">🏛️</div>
-      <div><div class="sidebar-logo-text">Yayasan CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
+      <div><div class="sidebar-logo-text">Global Future CMS</div><div class="sidebar-logo-sub">Panel Manajemen</div></div>
     </div>
     <nav class="sidebar-nav">{{template "sidebar_nav" .}}</nav>
     {{template "sidebar_footer" .}}
@@ -133,14 +133,7 @@
     </div>
   </main>
 </div>
-<script>
-(function(){
-  var f=document.getElementById('flashMsg');
-  if(!f) return;
-  setTimeout(function(){ f.classList.add('flash-hide'); }, 3500);
-  f.addEventListener('click',function(){ f.classList.add('flash-hide'); });
-})();
-</script>
+{{/* Flash auto-hide sudah dihandle oleh sidebar_toggle.html secara universal */}}
 </body>
 </html>
 {{end}}

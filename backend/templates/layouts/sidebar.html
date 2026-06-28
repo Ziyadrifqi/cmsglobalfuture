@@ -300,4 +300,20 @@
     .form-card, .card-body { padding: 1.1rem; }
   }
 </style>
+
+<script>
+/* Flash universal auto-hide — berlaku di SEMUA halaman CMS.
+   Script ini di-render di <head> setiap halaman via {{template "cms_styles"}}.
+   success → 3.5 detik | error/warning → 6 detik | klik ✕ → langsung tutup */
+document.addEventListener('DOMContentLoaded', function () {
+  document.querySelectorAll('.flash').forEach(function (el) {
+    if (el.dataset.flashInit) return; // hindari double-init
+    el.dataset.flashInit = '1';
+    var isErr = el.classList.contains('flash-error') || el.classList.contains('flash-warning');
+    var delay = parseInt(el.getAttribute('data-autohide') || '0', 10) || (isErr ? 6000 : 3500);
+    el.addEventListener('click', function () { el.classList.add('flash-hide'); });
+    setTimeout(function () { el.classList.add('flash-hide'); }, delay);
+  });
+});
+</script>
 {{end}}

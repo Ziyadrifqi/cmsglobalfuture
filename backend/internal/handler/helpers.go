@@ -1,11 +1,14 @@
 package handler
 
-import "github.com/gin-gonic/gin"
+import (
+	"log"
+	"os"
+	"strings"
 
-// withUserCtx menggabungkan data user dari Gin context ke dalam gin.H
-// yang dikirim ke template. Versi ini AMAN: pakai c.Get() bukan c.MustGet()
-// sehingga tidak panic kalau key tidak ada (misal handler dipakai di luar
-// middleware SetUserToContext).
+	"github.com/gin-gonic/gin"
+)
+
+// withUserCtx menggabungkan data user dari Gin context ke dalam gin.H.
 func withUserCtx(c *gin.Context, data gin.H) gin.H {
 	if data == nil {
 		data = gin.H{}
@@ -26,7 +29,6 @@ func withUserCtx(c *gin.Context, data gin.H) gin.H {
 }
 
 // sessionUserID mengambil user ID dari Gin context dengan aman.
-// Mengembalikan 0 jika key tidak ada atau tipe tidak cocok — tidak panic.
 func sessionUserID(c *gin.Context) uint {
 	val, exists := c.Get("session_user_id")
 	if !exists {
@@ -41,8 +43,35 @@ func sessionUserID(c *gin.Context) uint {
 		return uint(v)
 	case uint64:
 		return uint(v)
-	case float64: // gob decode kadang hasilkan float64
+	case float64:
 		return uint(v)
 	}
 	return 0
+}
+
+// removeFile menghapus file upload dari disk secara aman.
+//
+// urlPath adalah path URL seperti yang disimpan di database,
+// contoh: "/static/uploads/banners/foto.jpg"
+//
+// Hanya file di dalam folder static/uploads/ yang boleh dihapus —
+// ada safety check supaya tidak bisa hapus file di luar folder upload.
+// Error "file tidak ditemukan" diabaikan secara diam-diam (tidak perlu
+// dikhawatirkan kalau file memang sudah tidak ada).
+func removeFile(urlPath string) {
+	if urlPath == "" {
+		return
+	}
+	// Konversi URL path → filesystem path: "/static/..." → "static/..."
+	fspath := strings.TrimPrefix(urlPath, "/")
+
+	// Guard: hanya hapus file di dalam static/uploads/
+	if !strings.HasPrefix(fspath, "static/uploads/") {
+		log.Printf("removeFile: ditolak — path di luar uploads: %s", fspath)
+		return
+	}
+
+	if err := os.Remove(fspath); err != nil && !os.IsNotExist(err) {
+		log.Printf("removeFile: gagal hapus %s: %v", fspath, err)
+	}
 }

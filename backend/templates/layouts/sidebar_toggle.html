@@ -1,41 +1,47 @@
 {{define "sidebar_toggle"}}
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    var sidebar = document.querySelector(".sidebar");
-    var overlay = document.getElementById("sidebarOverlay");
-    if (!sidebar || !overlay) return;
+(function () {
+  /* ── Hamburger / sidebar mobile ─────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function () {
+    var sidebar  = document.querySelector('.sidebar');
+    var overlay  = document.getElementById('sidebarOverlay');
+    var btns     = document.querySelectorAll('.hamburger-btn');
 
-    function openSidebar() {
-      sidebar.classList.add("open");
-      overlay.classList.add("open");
-    }
-    function closeSidebar() {
-      sidebar.classList.remove("open");
-      overlay.classList.remove("open");
-    }
+    function openSidebar()  { sidebar && sidebar.classList.add('open');  overlay && overlay.classList.add('open'); }
+    function closeSidebar() { sidebar && sidebar.classList.remove('open'); overlay && overlay.classList.remove('open'); }
 
-    document.querySelectorAll(".hamburger-btn").forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        if (sidebar.classList.contains("open")) closeSidebar();
-        else openSidebar();
+    btns.forEach(function (btn) { btn.addEventListener('click', openSidebar); });
+    overlay && overlay.addEventListener('click', closeSidebar);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSidebar(); });
+
+    /* ── Flash alert — universal auto-hide & klik-untuk-tutup ─────────── */
+    //
+    // Script ini berjalan di SEMUA halaman CMS karena sidebar_toggle
+    // di-include di setiap template. Tidak perlu lagi menambahkan
+    // script flash per-halaman.
+    //
+    // Durasi default: 3500 ms (sukses) / 6000 ms (error/warning)
+    // Override per-elemen: tambahkan data-autohide="5000" di div.flash
+    //
+    document.querySelectorAll('.flash').forEach(function (el) {
+      // Tentukan durasi berdasarkan tipe atau atribut data-autohide
+      var custom = parseInt(el.getAttribute('data-autohide') || '0', 10);
+      var isError = el.classList.contains('flash-error') ||
+                    el.classList.contains('flash-warning');
+      var delay = custom || (isError ? 6000 : 3500);
+
+      // Klik untuk tutup manual
+      el.addEventListener('click', function () {
+        el.classList.add('flash-hide');
       });
-    });
 
-    overlay.addEventListener("click", closeSidebar);
-
-    // Tutup sidebar otomatis kalau user klik link/menu di dalamnya (mobile)
-    sidebar.querySelectorAll("a, button").forEach(function (el) {
-      el.addEventListener("click", function () {
-        if (window.innerWidth <= 900) closeSidebar();
-      });
-    });
-
-    // Reset state kalau resize ke layar besar (hindari sidebar "open" nyangkut)
-    window.addEventListener("resize", function () {
-      if (window.innerWidth > 900) closeSidebar();
+      // Auto-hide setelah delay
+      setTimeout(function () {
+        el.classList.add('flash-hide');
+      }, delay);
     });
   });
+})();
 </script>
 {{end}}
